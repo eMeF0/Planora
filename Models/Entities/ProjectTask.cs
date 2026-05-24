@@ -12,6 +12,7 @@ namespace Planora.Models.Entities
         public string? Description {get;set;}
         public bool IsCompleted {get;set;}
         public DateTimeOffset? Deadline {get;set;}
+        public DateTimeOffset CreatedAt {get;set;}
         public Project Project {get;set;} = null!;
         public Guid ProjectId {get;set;}
     }
