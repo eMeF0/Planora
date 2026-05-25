@@ -8,10 +8,10 @@ namespace Planora.Services
 {
     public interface ILinkService
     {
-        Task<List<ProjectLinkDto>> GetAllLinksAsync();
+        Task<List<ProjectLinkDto>> GetAllLinksAsync(Guid projectId);
         Task<ProjectLinkDto> GetLinkByIdAsync(Guid id);
         Task<ProjectLinkDto> CreateLinkAsync(Guid projectId, CreateLinkDto createLinkDto);
         Task<ProjectLinkDto> UpdateLinkAsync(Guid id, UpdateLinkDto updateLinkDto);
-        Task DeleteLinkAsync(Guid id);
+        Task<bool> DeleteLinkAsync(Guid id);
     }
 }
