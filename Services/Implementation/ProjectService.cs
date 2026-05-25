@@ -11,6 +11,7 @@ using Planora.Models.DTOs.Task;
 using Planora.Models.Entities;
 using Planora.Services.Interfaces;
 using Planora.Models.DTOs.Note;
+using Planora.Models.DTOs.Idea;
 
 namespace Planora.Services.Implementation
 {
@@ -76,6 +77,7 @@ namespace Planora.Services.Implementation
                 .Include(p => p.Tasks)
                 .Include(p => p.Notes)
                 .FirstOrDefaultAsync();
+                
             if (project == null)
             {
                 throw new Exception("Project not found");
@@ -102,12 +104,19 @@ namespace Planora.Services.Implementation
                     Description = task.Description,
                     CreatedAt = task.CreatedAt
                 }).ToList(),
-                Ideas = project.Notes.Select(note => new ProjectNotesDto
+                Notes = project.Notes.Select(note => new ProjectNotesDto
                 {
                     Id = note.Id,
                     Content = note.Content,
                     CreatedAt = note.CreatedAt
-                }.ToList())
+                }).ToList(),
+                Ideas = project.Ideas.Select(idea => new ProjectIdeaDto
+                {
+                    Id = idea.Id,
+                    Title = idea.Title,
+                    Description = idea.Description,
+                    CreatedAt = idea.CreatedAt
+                }).ToList()
             };
         }
 

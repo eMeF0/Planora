@@ -7,6 +7,9 @@ namespace Planora.Models.DTOs.Idea
 {
     public class ProjectIdeaDto
     {
-        
+        public Guid Id {get;set;}
+        public string Title {get;set;} = string.Empty;
+        public string? Description {get;set;}
+        public DateTimeOffset CreatedAt { get; set; }
     }
 }
