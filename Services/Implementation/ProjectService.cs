@@ -104,7 +104,7 @@ namespace Planora.Services.Implementation
                     Description = task.Description,
                     CreatedAt = task.CreatedAt
                 }).ToList(),
-                Notes = project.Notes.Select(note => new ProjectNotesDto
+                Notes = project.Notes.Select(note => new ProjectNoteDto
                 {
                     Id = note.Id,
                     Content = note.Content,

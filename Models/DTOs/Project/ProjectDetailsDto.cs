@@ -20,6 +20,6 @@ namespace Planora.Models.DTOs.Project
         public ICollection<ProjectIdeaDto> Ideas { get; set; } = new List<ProjectIdeaDto>();
         public ICollection<ProjectLinkDto> Links { get; set; } = new List<ProjectLinkDto>();
         public ICollection<ProjectTaskDto> Tasks { get; set; } = new List<ProjectTaskDto>();
-        public ICollection<ProjectNotesDto> Notes { get; set; } = new List<ProjectNotesDto>();
+        public ICollection<ProjectNoteDto> Notes { get; set; } = new List<ProjectNoteDto>();
     }
 }

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Planora.Models.DTOs.Note
 {
-    public class ProjectNotesDto
+    public class ProjectNoteDto
     {
         public Guid Id { get; set; }
         public string Content { get; set; } = string.Empty;
