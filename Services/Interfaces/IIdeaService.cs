@@ -6,7 +6,7 @@ using Planora.Models.DTOs.Idea;
 
 namespace Planora.Services.Interfaces
 {
-    public interface IIdeaProject
+    public interface IIdeaService
     {
         Task<ProjectIdeaDto> CreateIdeaAsync(Guid projectId, CreateIdeaDto createIdeaDto);
         Task<bool> DeleteIdeaAsync(Guid ideaId);
