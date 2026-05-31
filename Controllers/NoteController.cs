@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Planora.Models.DTOs.Note;
 using Planora.Services.Interfaces;
 
-namespace Planora.Controller
+namespace Planora.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class NoteController(INoteService _service) : ControllerBase
     {
-        [HttpPut]
+        [HttpPost("/api/projects/{projectId:guid}/notes")]
         public async Task<ActionResult<ProjectNoteDto>> CreateNote(Guid projectId, [FromBody] CreateNoteDto noteDto)
         {
             var createdNote = await _service.CreateNoteAsync(projectId, noteDto);
@@ -27,7 +27,7 @@ namespace Planora.Controller
             return Ok(note);
         }
 
-        [HttpGet("{id:guid")]
+        [HttpGet("/api/projects/{projectId:guid}/notes")]
         public async Task<ActionResult<List<ProjectNoteDto>>> GetAllNotes(Guid projectId)
         {
             var notes = await _service.GetAllNotesAsync(projectId);

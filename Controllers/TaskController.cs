@@ -3,13 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Planora.Models.DTOs.Task;
 using Planora.Services.Interfaces;
 
-namespace Planora.Controller
+namespace Planora.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     public class TaskController(ITaskService _service) : ControllerBase
     {
-        [HttpPost]
+        [HttpPost("/api/projects/{projectId:guid}/tasks")]
         public async Task<ActionResult<ProjectTaskDto>> CreateTask(Guid projectId, [FromBody] CreateTaskDto taskDto)
         {
             var createdTask = await _service.CreateTaskAsync(projectId,taskDto);
@@ -27,7 +27,7 @@ namespace Planora.Controller
             return Ok(task);
         }
 
-        [HttpGet]
+        [HttpGet("/api/projects/{projectId:guid}/tasks")]
         public async Task<ActionResult<List<ProjectTaskDto>>> GetAllTasks(Guid projectId)
         {
             var tasks = await _service.GetAllTasksAsync(projectId);

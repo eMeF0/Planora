@@ -4,7 +4,7 @@ using Planora.Models.DTOs;
 using Planora.Models.DTOs.Project;
 using Planora.Services.Interfaces;
 
-namespace Planora.Controller
+namespace Planora.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

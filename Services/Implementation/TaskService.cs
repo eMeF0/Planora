@@ -19,6 +19,12 @@ namespace Planora.Services.Implementation
     {
         public async Task<ProjectTaskDto> CreateTaskAsync(Guid projectId, CreateTaskDto createTaskDto)
         {
+            var projectExists = await _context.Projects.AnyAsync(x => x.Id == projectId);
+            if (!projectExists)
+            {
+                throw new Exception("Project not found");
+            }
+            
             var task = new ProjectTask
             {
                 Id = Guid.NewGuid(),
