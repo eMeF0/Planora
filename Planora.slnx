@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/Planora.API/">
+    <Project Path="Planora.API/Planora.csproj" />
+  </Folder>
+  <Project Path="Planora.Web/Planora.Web.csproj" />
+</Solution>
