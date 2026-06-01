@@ -1,27 +1,41 @@
 ﻿@page "/"
+@using MudBlazor
 @using Planora.Web.Models.DTOs
 @using System.Net.Http.Json
 @inject HttpClient Http
-<h1>Welcome to Planora!</h1>
-@if(projects == null)
-{
-    <p>Loading projects...</p>
-}
-else if(projects.Count == 0)
-{
-    <p>No projects found.</p>
-}
-else
-{
-    foreach(var project in projects)
+<MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Send" Color="Color.Primary" href="/projects/create">
+    Create Project
+</MudButton>
+<MudGrid>
+    @foreach (var project in projects ?? Enumerable.Empty<ProjectSummaryDto>())
     {
-        <div class="project-card">
-            <h2>@project.Name</h2>
-            <p>@project.Description</p>
-            <p>Status: @project.Status</p>
-        </div>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard>
+                <MudCardContent>
+
+                    <MudText Typo="Typo.h5">
+                        @project.Name
+                    </MudText>
+
+                    <MudText>
+                        @project.Description
+                    </MudText>
+
+                    <MudChip T="string" Color="Color.Success">
+                        @project.Status.ToString()
+                    </MudChip>
+
+                </MudCardContent>
+
+                <MudCardActions>
+                    <MudButton Color="Color.Primary" Href="@($"/projects/{project.Id}")">
+                        Open Project
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
     }
-}
+</MudGrid>
 
 @code {
     private List<ProjectSummaryDto>? projects;

@@ -1,0 +1,34 @@
+@page "/projects/create"
+@using Planora.Web.Models.DTOs.Project
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<MudPaper Class="pa-4">
+    <MudForm>
+        <MudTextField T="string" Label="Project Name" @bind-value="newProject.Name"/>
+        <MudTextField T="string" Label="Description" @bind-value="newProject.Description"/>
+    </MudForm>
+</MudPaper>
+<MudDatePicker PickerVariant="PickerVariant.Static" @bind-date="selectedDeadline"/>
+<MudButton OnClick="CreateNewProject">
+    Create
+</MudButton>
+
+@code{
+    private CreateProjectDto newProject = new CreateProjectDto();
+    private DateTime? selectedDeadline;
+
+    private async Task CreateNewProject()
+    {
+        if (selectedDeadline.HasValue)
+        {
+            newProject.Deadline = new DateTimeOffset(selectedDeadline.Value, TimeSpan.Zero);
+        }
+
+        var response = await Http.PostAsJsonAsync("api/project", newProject);
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo("/projects");
+        }
+    }
+}

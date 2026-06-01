@@ -1,0 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Planora.Web.Models.DTOs.Link
+{
+    public class ProjectLinkDto
+    {
+        public Guid Id {get;set;}
+        public string Url {get;set;} = string.Empty;
+        public string? Description {get;set;}
+        public DateTimeOffset CreatedAt { get; set; }        
+    }
+}
