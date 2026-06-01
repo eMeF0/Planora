@@ -1,7 +1,33 @@
 ﻿@page "/"
+@using Planora.Web.Models.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+<h1>Welcome to Planora!</h1>
+@if(projects == null)
+{
+    <p>Loading projects...</p>
+}
+else if(projects.Count == 0)
+{
+    <p>No projects found.</p>
+}
+else
+{
+    foreach(var project in projects)
+    {
+        <div class="project-card">
+            <h2>@project.Name</h2>
+            <p>@project.Description</p>
+            <p>Status: @project.Status</p>
+        </div>
+    }
+}
 
-<PageTitle>Home</PageTitle>
+@code {
+    private List<ProjectSummaryDto>? projects;
 
-<h1>Hello, world!</h1>
-
-Welcome to your new app.
+    protected override async Task OnInitializedAsync()
+    {
+        projects = await Http.GetFromJsonAsync<List<ProjectSummaryDto>>("api/project");
+    }
+}
