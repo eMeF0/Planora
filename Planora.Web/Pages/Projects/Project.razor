@@ -6,31 +6,32 @@
 @using Microsoft.AspNetCore.Components
 @inject HttpClient Http
 
-@if (project == null)
-{
-    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
-}
-else
-{
-    <MudText Typo="Typo.h4">
-        @project.Name
-    </MudText>
-
-    <MudText>
-        @project.Description
-    </MudText>
-
-    <MudChip T="string" Color="Color.Success">
-        @project.Status.ToString()
-    </MudChip>
-}
+<MudPaper>
+    <MudDrawerContainer Class="mud-height-full">
+        <MudDrawer @bind-Open="@_open" Fixed="false" Elevation="1" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true" Breakpoint="Breakpoint.None">
+            <MudNavMenu>
+                <MudNavLink Match="NavLinkMatch.All" Href="@($"/tasks/create/{project.Id}")" Icon="@Icons.Material.Filled.Add">Task</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Href="@($"/notes/create/{project.Id}")" Icon="@Icons.Material.Filled.Note">Note</MudNavLink>
+                <MudNavLink Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Group">Community</MudNavLink>
+            </MudNavMenu>
+        </MudDrawer>
+        <div class="d-flex justify-center align-center mud-height-full">
+            <MudButton OnClick="@ToggleDrawer" Color="Color.Primary">Toggle</MudButton>
+        </div>
+    </MudDrawerContainer>
+</MudPaper>
 
 
 @code {
     [Parameter]
     public Guid Id { get; set; }
     private ProjectDetailDto? project;
+    private bool _open = false;
 
+    private void ToggleDrawer()
+    {
+        _open = !_open;
+    }
     protected override async Task OnInitializedAsync()
     {
         project = await Http.GetFromJsonAsync<ProjectDetailDto>($"api/project/{Id}");

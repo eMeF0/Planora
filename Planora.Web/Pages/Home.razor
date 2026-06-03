@@ -40,7 +40,7 @@
 @code {
     private List<ProjectSummaryDto>? projects;
 
-    protected override async Task OnInitializedAsync()
+    protected override async System.Threading.Tasks.Task OnInitializedAsync()
     {
         projects = await Http.GetFromJsonAsync<List<ProjectSummaryDto>>("api/project");
     }

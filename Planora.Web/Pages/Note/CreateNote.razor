@@ -1,0 +1,34 @@
+﻿@page "/notes/create/{Id:guid}"
+@using Planora.Web.Models.DTOs.Note
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<MudPaper Class="pa-4">
+    <MudForm>
+        <MudTextField T="string"
+                      Label="Note Content"
+                      @bind-Value="newNote.Content"
+                      Lines="5" />
+    </MudForm>
+</MudPaper>
+
+<MudButton OnClick="@CreateNewNote">
+    Create
+</MudButton>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private CreateNoteDto newNote = new();
+
+    private async Task CreateNewNote()
+    {
+        var response = await Http.PostAsJsonAsync($"api/note/{Id}", newNote);
+
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo($"/projects/{Id}");
+        }
+    }
+}
