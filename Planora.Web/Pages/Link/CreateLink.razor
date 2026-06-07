@@ -1,0 +1,32 @@
+@page "/links/create/{Id:guid}"
+@using Planora.Web.Models.DTOs.Link
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<MudPaper Class="pa-4">
+    <MudForm>
+        <MudTextField T="string" Label="Link Title" @bind-Value="newLink.Description" />
+        <MudTextField T="string" Label="Link URL" @bind-Value="newLink.Url" />
+    </MudForm>
+</MudPaper>
+
+<MudButton OnClick="@CreateNewLink">
+    Create
+</MudButton>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private CreateLinkDto newLink = new();
+
+    private async Task CreateNewLink()
+    {
+        var response = await Http.PostAsJsonAsync($"api/projects/{Id}/links", newLink);
+
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo($"/projects/{Id}");
+            }
+    }
+}

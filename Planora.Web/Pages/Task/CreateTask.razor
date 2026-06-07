@@ -5,31 +5,27 @@
 
 <MudPaper Class="pa-4">
     <MudForm>
-        <MudTextField T="string" Label="Title" @bind-value="newProject.Title"/>
-        <MudTextField T="string" Label="Description" @bind-value="newProject.Description" />
-        <MudTextField T="DateTime?" Label="Deadline" @bind-value="selectedDeadline"/>
+        <MudTextField T="string" Label="Task Title" @bind-value="newProject.Title"/>
+        <MudTextField T="string" Label="Description" @bind-value="newProject.Description"/>
     </MudForm>
 </MudPaper>
-<MudDatePicker PickerVariant="PickerVariant.Static" @bind-date="selectedDeadline" />
+<MudDatePicker PickerVariant="PickerVariant.Static" @bind-date="selectedDeadline"/>
 <MudButton OnClick="CreateNewProject">
     Create
 </MudButton>
 
 @code {
+    [Parameter]
+    public Guid Id {get;set;}
     private CreateTaskDto newProject = new CreateTaskDto();
     private DateTime? selectedDeadline;
 
     private async Task CreateNewProject()
     {
-        if (selectedDeadline.HasValue)
-        {
-            newProject.Deadline = new DateTimeOffset(selectedDeadline.Value, TimeSpan.Zero);
-        }
-
-        var response = await Http.PostAsJsonAsync("api/project", newProject);
+        var response = await Http.PostAsJsonAsync($"api/projects/{Id}/tasks", newProject);
         if (response.IsSuccessStatusCode)
         {
-            NavigationManager.NavigateTo("/projects");
+            NavigationManager.NavigateTo($"/projects/{Id}");
         }
     }
 }

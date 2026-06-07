@@ -1,0 +1,32 @@
+@page "/ideas/create/{Id:guid}"
+@using Planora.Web.Models.DTOs.Idea
+@inject NavigationManager NavigationManager
+@inject HttpClient Http
+
+<MudPaper Class="pa-4">
+    <MudForm>
+        <MudTextField T="string" Label="Idea Title" @bind-Value="newIdea.Title" />
+        <MudTextField T="string" Label="Idea Description" @bind-Value="newIdea.Description" Lines="5" />
+    </MudForm>
+</MudPaper>
+
+<MudButton OnClick="@CreateNewIdea">
+    Create
+</MudButton>
+
+@code {
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private CreateIdeaDto newIdea = new();
+
+    private async Task CreateNewIdea()
+    {
+        var response = await Http.PostAsJsonAsync($"api/projects/{Id}/ideas", newIdea);
+
+        if (response.IsSuccessStatusCode)
+        {
+            NavigationManager.NavigateTo($"/projects/{Id}");
+        }
+    }
+}
