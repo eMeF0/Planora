@@ -3,16 +3,35 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-<MudPaper Class="pa-4">
-    <MudForm>
-        <MudTextField T="string" Label="Link Title" @bind-Value="newLink.Description" />
-        <MudTextField T="string" Label="Link URL" @bind-Value="newLink.Url" />
-    </MudForm>
-</MudPaper>
+<section class="form-layout">
+    <div class="form-intro">
+        <span class="section-kicker">Resource</span>
+        <h2>Add a useful link</h2>
+        <p>Attach specs, references, tickets, or documents so the project stays organized.</p>
+    </div>
 
-<MudButton OnClick="@CreateNewLink">
-    Create
-</MudButton>
+    <EditForm Model="newLink" OnValidSubmit="CreateNewLink" class="form-card">
+        <DataAnnotationsValidator />
+        <div class="form-grid">
+            <label class="input-control">
+                <span>Link title</span>
+                <InputText @bind-Value="newLink.Description" placeholder="Product brief" />
+                <ValidationMessage For="@(() => newLink.Description)" />
+            </label>
+
+            <label class="input-control">
+                <span>URL</span>
+                <InputText @bind-Value="newLink.Url" placeholder="https://example.com/spec" />
+                <ValidationMessage For="@(() => newLink.Url)" />
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Cancel</a>
+            <button class="btn btn-primary" type="submit">Add link</button>
+        </div>
+    </EditForm>
+</section>
 
 @code {
     [Parameter]

@@ -3,15 +3,29 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-<MudPaper Class="pa-4">
-    <MudForm>
-        <MudTextField T="string" Label="Note Content" @bind-Value="newNote.Content" Lines="5" />
-    </MudForm>
-</MudPaper>
+<section class="form-layout">
+    <div class="form-intro">
+        <span class="section-kicker">Note</span>
+        <h2>Add project context</h2>
+        <p>Keep decisions, meeting notes, and important context visible beside the work.</p>
+    </div>
 
-<MudButton OnClick="@CreateNewNote">
-    Create
-</MudButton>
+    <EditForm Model="newNote" OnValidSubmit="CreateNewNote" class="form-card">
+        <DataAnnotationsValidator />
+        <div class="form-grid">
+            <label class="input-control">
+                <span>Note content</span>
+                <InputTextArea @bind-Value="newNote.Content" placeholder="Decision, discussion summary, or reminder" rows="7" />
+                <ValidationMessage For="@(() => newNote.Content)" />
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save note</button>
+        </div>
+    </EditForm>
+</section>
 
 @code {
     [Parameter]

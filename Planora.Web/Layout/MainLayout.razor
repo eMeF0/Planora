@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
 
 <MudThemeProvider />
 <MudPopoverProvider />
@@ -10,13 +11,76 @@
         <NavMenu />
     </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+    <main class="app-main">
+        <div class="top-row">
+            <div class="page-heading">
+                <span class="eyebrow">Workspace</span>
+                <h1>@PageTitle</h1>
+            </div>
+
+            <label class="global-search">
+                <span class="search-icon" aria-hidden="true"></span>
+                <input type="search" placeholder="Search tasks, projects, notes" aria-label="Search tasks, projects, notes" />
+            </label>
+
+            <div class="profile-menu" aria-label="User profile">
+                <span class="profile-avatar" aria-hidden="true">PL</span>
+                <div>
+                    <strong>Planora</strong>
+                    <span>Product team</span>
+                </div>
+            </div>
         </div>
 
-        <article class="content px-4">
+        <article class="content">
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    private string PageTitle
+    {
+        get
+        {
+            var path = NavigationManager.ToBaseRelativePath(NavigationManager.Uri).Trim('/').ToLowerInvariant();
+
+            if (path.StartsWith("projects/create"))
+            {
+                return "Create project";
+            }
+
+            if (path.StartsWith("projects/"))
+            {
+                return "Project details";
+            }
+
+            if (path.StartsWith("tasks/create"))
+            {
+                return "Create task";
+            }
+
+            if (path.StartsWith("ideas/create"))
+            {
+                return "Capture idea";
+            }
+
+            if (path.StartsWith("links/create"))
+            {
+                return "Add link";
+            }
+
+            if (path.StartsWith("notes/create"))
+            {
+                return "Add note";
+            }
+
+            if (path.StartsWith("projects"))
+            {
+                return "Projects";
+            }
+
+            return "Dashboard";
+        }
+    }
+}

@@ -3,16 +3,40 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-<MudPaper Class="pa-4">
-    <MudForm>
-        <MudTextField T="string" Label="Task Title" @bind-value="newProject.Title"/>
-        <MudTextField T="string" Label="Description" @bind-value="newProject.Description"/>
-    </MudForm>
-</MudPaper>
-<MudDatePicker PickerVariant="PickerVariant.Static" @bind-date="selectedDeadline"/>
-<MudButton OnClick="CreateNewProject">
-    Create
-</MudButton>
+<section class="form-layout">
+    <div class="form-intro">
+        <span class="section-kicker">New task</span>
+        <h2>Define the next action</h2>
+        <p>Add a task with enough detail for someone to pick it up and complete it confidently.</p>
+    </div>
+
+    <EditForm Model="newProject" OnValidSubmit="CreateNewProject" class="form-card">
+        <DataAnnotationsValidator />
+        <div class="form-grid">
+            <label class="input-control">
+                <span>Task title</span>
+                <InputText @bind-Value="newProject.Title" placeholder="Prepare sprint plan" />
+                <ValidationMessage For="@(() => newProject.Title)" />
+            </label>
+
+            <label class="input-control">
+                <span>Description</span>
+                <InputTextArea @bind-Value="newProject.Description" placeholder="Acceptance criteria, links, and context" rows="5" />
+                <ValidationMessage For="@(() => newProject.Description)" />
+            </label>
+
+            <label class="input-control">
+                <span>Due date</span>
+                <input type="date" @bind="selectedDeadline" />
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Cancel</a>
+            <button class="btn btn-primary" type="submit">Create task</button>
+        </div>
+    </EditForm>
+</section>
 
 @code {
     [Parameter]
@@ -22,6 +46,11 @@
 
     private async Task CreateNewProject()
     {
+        if (selectedDeadline.HasValue)
+        {
+            newProject.Deadline = new DateTimeOffset(selectedDeadline.Value, TimeSpan.Zero);
+        }
+
         var response = await Http.PostAsJsonAsync($"api/projects/{Id}/tasks", newProject);
         if (response.IsSuccessStatusCode)
         {

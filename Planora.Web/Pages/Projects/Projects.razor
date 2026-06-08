@@ -1,0 +1,296 @@
+@page "/projects"
+@using Planora.Web.Models.DTOs
+@using Planora.Web.Models.DTOs.Project
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<section class="project-hero">
+    <div>
+        <span class="section-kicker">Projects</span>
+        <h2>Project management</h2>
+        <p>Create, search, filter, edit, and remove projects from the dedicated Planora project workspace.</p>
+    </div>
+    <div class="hero-actions">
+        <a class="btn btn-primary" href="/projects/create">Create project</a>
+    </div>
+</section>
+
+<section class="management-grid">
+    <div class="panel panel-large">
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">Manage</span>
+                <h2>Project list</h2>
+            </div>
+            <div class="toolbar">
+                <label class="input-control compact">
+                    <span>Search</span>
+                    <input type="search" placeholder="Find project" @bind="searchTerm" @bind:event="oninput" />
+                </label>
+                <select class="select-control" @bind="statusFilter" aria-label="Filter projects by status">
+                    <option value="All">All status</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Archived">Archived</option>
+                </select>
+            </div>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(loadError))
+        {
+            <div class="empty-state">@loadError</div>
+        }
+        else if (projects is null)
+        {
+            <div class="empty-state">Loading projects...</div>
+        }
+        else if (!FilteredProjects.Any())
+        {
+            <div class="empty-state">No projects match the current filters.</div>
+        }
+        else
+        {
+            <div class="management-table" role="table" aria-label="Project management table">
+                <div class="management-row table-head" role="row">
+                    <span role="columnheader">Project</span>
+                    <span role="columnheader">Status</span>
+                    <span role="columnheader">Deadline</span>
+                    <span role="columnheader">Actions</span>
+                </div>
+                @foreach (var project in FilteredProjects)
+                {
+                    <div class="management-row" role="row">
+                        <span class="project-cell" role="cell">
+                            <strong>@project.Name</strong>
+                            <small>@(string.IsNullOrWhiteSpace(project.Description) ? "No description added." : project.Description)</small>
+                        </span>
+                        <span role="cell">
+                            <span class="status-badge @StatusClass(project.Status)">@project.Status</span>
+                        </span>
+                        <span class="due-date" role="cell">@FormatDeadline(project.Deadline)</span>
+                        <span class="row-actions" role="cell">
+                            <a class="icon-button" href="@($"/projects/{project.Id}")" aria-label="Open project">Open</a>
+                            <button class="icon-button" type="button" @onclick="() => BeginEdit(project)">Edit</button>
+                            <button class="icon-button danger-action" type="button" @onclick="() => RequestDelete(project)">Delete</button>
+                        </span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <aside class="side-column">
+        @if (editingProject is not null)
+        {
+            <div class="panel">
+                <div class="panel-header simple">
+                    <div>
+                        <span class="section-kicker">Edit</span>
+                        <h2>Edit project</h2>
+                    </div>
+                </div>
+
+                <EditForm Model="editModel" OnValidSubmit="SaveEdit" class="compact-form">
+                    <DataAnnotationsValidator />
+                    <label class="input-control">
+                        <span>Name</span>
+                        <InputText @bind-Value="editModel.Name" />
+                    </label>
+                    <label class="input-control">
+                        <span>Description</span>
+                        <InputTextArea @bind-Value="editModel.Description" rows="4" />
+                    </label>
+                    <label class="input-control">
+                        <span>Status</span>
+                        <InputSelect @bind-Value="editModel.Status">
+                            <option value="@ProjectStatus.Active">Active</option>
+                            <option value="@ProjectStatus.Completed">Completed</option>
+                            <option value="@ProjectStatus.Inactive">Inactive</option>
+                            <option value="@ProjectStatus.Archived">Archived</option>
+                        </InputSelect>
+                    </label>
+                    <label class="input-control">
+                        <span>Deadline</span>
+                        <input type="date" @bind="editDeadline" />
+                    </label>
+
+                    <div class="form-actions compact-actions">
+                        <button class="btn btn-secondary" type="button" @onclick="CancelEdit">Cancel</button>
+                        <button class="btn btn-primary" type="submit">Save changes</button>
+                    </div>
+                </EditForm>
+            </div>
+        }
+
+        @if (deleteCandidate is not null)
+        {
+            <div class="panel danger-panel">
+                <div class="panel-header simple">
+                    <div>
+                        <span class="section-kicker">Delete</span>
+                        <h2>Remove project</h2>
+                    </div>
+                </div>
+                <p class="panel-copy">Delete <strong>@deleteCandidate.Name</strong>? This removes the project from the workspace.</p>
+                <div class="form-actions compact-actions">
+                    <button class="btn btn-secondary" type="button" @onclick="CancelDelete">Cancel</button>
+                    <button class="btn btn-danger" type="button" @onclick="DeleteProject">Delete</button>
+                </div>
+            </div>
+        }
+
+        <div class="panel">
+            <div class="panel-header simple">
+                <div>
+                    <span class="section-kicker">Summary</span>
+                    <h2>Portfolio</h2>
+                </div>
+            </div>
+            <div class="insight-grid compact-insights">
+                <div class="insight-row">
+                    <span>Total</span>
+                    <strong>@ProjectItems.Count()</strong>
+                </div>
+                <div class="insight-row">
+                    <span>Active</span>
+                    <strong>@ProjectItems.Count(project => project.Status == ProjectStatus.Active)</strong>
+                </div>
+                <div class="insight-row">
+                    <span>Completed</span>
+                    <strong>@ProjectItems.Count(project => project.Status == ProjectStatus.Completed)</strong>
+                </div>
+            </div>
+        </div>
+    </aside>
+</section>
+
+@code {
+    private List<ProjectSummaryDto>? projects;
+    private string searchTerm = string.Empty;
+    private string statusFilter = "All";
+    private string? loadError;
+    private ProjectSummaryDto? editingProject;
+    private ProjectSummaryDto? deleteCandidate;
+    private UpdateProjectDto editModel = new();
+    private DateTime? editDeadline;
+
+    private IEnumerable<ProjectSummaryDto> ProjectItems => projects ?? Enumerable.Empty<ProjectSummaryDto>();
+
+    private IEnumerable<ProjectSummaryDto> FilteredProjects => ProjectItems
+        .Where(project => string.IsNullOrWhiteSpace(searchTerm)
+            || project.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+            || (project.Description?.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ?? false))
+        .Where(project => statusFilter == "All" || project.Status.ToString() == statusFilter)
+        .OrderBy(project => project.Deadline ?? DateTimeOffset.MaxValue);
+
+    protected override async System.Threading.Tasks.Task OnInitializedAsync()
+    {
+        await LoadProjects();
+    }
+
+    private async System.Threading.Tasks.Task LoadProjects()
+    {
+        try
+        {
+            projects = await Http.GetFromJsonAsync<List<ProjectSummaryDto>>("api/project");
+            loadError = null;
+        }
+        catch (Exception)
+        {
+            loadError = "Projects could not be loaded. Check that the Planora API and database are running.";
+            projects = new List<ProjectSummaryDto>();
+        }
+    }
+
+    private void BeginEdit(ProjectSummaryDto project)
+    {
+        editingProject = project;
+        deleteCandidate = null;
+        editModel = new UpdateProjectDto
+        {
+            Id = project.Id,
+            Name = project.Name,
+            Description = project.Description,
+            Deadline = project.Deadline,
+            Status = project.Status
+        };
+        editDeadline = project.Deadline?.LocalDateTime.Date;
+    }
+
+    private void CancelEdit()
+    {
+        editingProject = null;
+        editModel = new UpdateProjectDto();
+        editDeadline = null;
+    }
+
+    private async System.Threading.Tasks.Task SaveEdit()
+    {
+        if (editingProject is null)
+        {
+            return;
+        }
+
+        editModel.Deadline = editDeadline.HasValue ? new DateTimeOffset(editDeadline.Value, TimeSpan.Zero) : null;
+        var response = await Http.PutAsJsonAsync($"api/project/{editingProject.Id}", editModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            CancelEdit();
+            await LoadProjects();
+        }
+        else
+        {
+            loadError = "Project could not be updated.";
+        }
+    }
+
+    private void RequestDelete(ProjectSummaryDto project)
+    {
+        deleteCandidate = project;
+        editingProject = null;
+    }
+
+    private void CancelDelete()
+    {
+        deleteCandidate = null;
+    }
+
+    private async System.Threading.Tasks.Task DeleteProject()
+    {
+        if (deleteCandidate is null)
+        {
+            return;
+        }
+
+        var response = await Http.DeleteAsync($"api/project/{deleteCandidate.Id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            deleteCandidate = null;
+            await LoadProjects();
+        }
+        else
+        {
+            loadError = "Project could not be deleted.";
+        }
+    }
+
+    private static string FormatDeadline(DateTimeOffset? deadline)
+    {
+        return deadline.HasValue ? deadline.Value.LocalDateTime.ToString("MMM d, yyyy") : "No deadline";
+    }
+
+    private static string StatusClass(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.Active => "status-active",
+            ProjectStatus.Completed => "status-completed",
+            ProjectStatus.Inactive => "status-inactive",
+            ProjectStatus.Archived => "status-archived",
+            _ => "status-inactive"
+        };
+    }
+}

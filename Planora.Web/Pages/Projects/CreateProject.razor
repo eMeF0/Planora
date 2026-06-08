@@ -3,16 +3,40 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-<MudPaper Class="pa-4">
-    <MudForm>
-        <MudTextField T="string" Label="Project Name" @bind-value="newProject.Name"/>
-        <MudTextField T="string" Label="Description" @bind-value="newProject.Description"/>
-    </MudForm>
-</MudPaper>
-<MudDatePicker PickerVariant="PickerVariant.Static" @bind-date="selectedDeadline"/>
-<MudButton OnClick="CreateNewProject">
-    Create
-</MudButton>
+<section class="form-layout">
+    <div class="form-intro">
+        <span class="section-kicker">New project</span>
+        <h2>Set up a focused workspace</h2>
+        <p>Create a project with a clear name, useful context, and an optional deadline for planning.</p>
+    </div>
+
+    <EditForm Model="newProject" OnValidSubmit="CreateNewProject" class="form-card">
+        <DataAnnotationsValidator />
+        <div class="form-grid">
+            <label class="input-control">
+                <span>Project name</span>
+                <InputText @bind-Value="newProject.Name" placeholder="Website redesign" />
+                <ValidationMessage For="@(() => newProject.Name)" />
+            </label>
+
+            <label class="input-control">
+                <span>Description</span>
+                <InputTextArea @bind-Value="newProject.Description" placeholder="Scope, goals, stakeholders" rows="5" />
+                <ValidationMessage For="@(() => newProject.Description)" />
+            </label>
+
+            <label class="input-control">
+                <span>Deadline</span>
+                <input type="date" @bind="selectedDeadline" />
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="/projects">Cancel</a>
+            <button class="btn btn-primary" type="submit">Create project</button>
+        </div>
+    </EditForm>
+</section>
 
 @code{
     private CreateProjectDto newProject = new CreateProjectDto();

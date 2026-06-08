@@ -1,26 +1,91 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">Planora.Web</a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
+﻿<aside class="nav-shell">
+    <div class="brand-row">
+        <a class="brand" href="" aria-label="Planora dashboard">
+            <span class="brand-mark" aria-hidden="true">P</span>
+            <span class="brand-copy">
+                <strong>Planora</strong>
+                <small>Productivity Workspace</small>
+            </span>
+        </a>
+
+        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
     </div>
-</div>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
+    <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
+        <nav class="nav-list" aria-label="Primary navigation">
+            <div class="nav-section">
+                <div class="nav-section-label">Główne</div>
+
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <svg class="nav-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10Z"></path>
+                        <path d="M13 21h8V11h-8v10Z"></path>
+                        <path d="M13 3v6h8V3h-8Z"></path>
+                        <path d="M3 21h8v-6H3v6Z"></path>
+                    </svg>
+                    <span class="nav-label">Dashboard</span>
+                </NavLink>
+
+                <NavLink class="nav-link" href="/tasks">
+                    <svg class="nav-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path d="M9 11 12 14 22 4"></path>
+                        <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    <span class="nav-label">Zadania</span>
+                </NavLink>
+
+                <NavLink class="nav-link" href="/projects">
+                    <svg class="nav-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"></path>
+                    </svg>
+                    <span class="nav-label">Projekty</span>
+                </NavLink>
+
+                <NavLink class="nav-link" href="/calendar">
+                    <svg class="nav-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path d="M8 2v4"></path>
+                        <path d="M16 2v4"></path>
+                        <path d="M3 10h18"></path>
+                        <path d="M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
+                    </svg>
+                    <span class="nav-label">Kalendarz</span>
+                </NavLink>
+
+                <NavLink class="nav-link" href="/analytics">
+                    <svg class="nav-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path d="M3 3v18h18"></path>
+                        <path d="m19 9-5 5-4-4-3 3"></path>
+                    </svg>
+                    <span class="nav-label">Analityka</span>
+                </NavLink>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-label">System</div>
+
+                <NavLink class="nav-link" href="/settings">
+                    <svg class="nav-icon" aria-hidden="true" viewBox="0 0 24 24">
+                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"></path>
+                        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+                    </svg>
+                    <span class="nav-label">Ustawienia</span>
+                </NavLink>
+            </div>
+        </nav>
+
+        <div class="sidebar-profile">
+            <span class="profile-avatar" aria-hidden="true">M</span>
+            <span class="profile-copy">
+                <strong>Mateusz</strong>
+                <small>Planora Workspace</small>
+            </span>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="/projects">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Project
-            </NavLink>
-        </div>
-    </nav>
-</div>
+    </div>
+</aside>
 
 @code {
     private bool collapseNavMenu = true;

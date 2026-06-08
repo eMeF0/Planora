@@ -3,16 +3,35 @@
 @inject NavigationManager NavigationManager
 @inject HttpClient Http
 
-<MudPaper Class="pa-4">
-    <MudForm>
-        <MudTextField T="string" Label="Idea Title" @bind-Value="newIdea.Title" />
-        <MudTextField T="string" Label="Idea Description" @bind-Value="newIdea.Description" Lines="5" />
-    </MudForm>
-</MudPaper>
+<section class="form-layout">
+    <div class="form-intro">
+        <span class="section-kicker">Idea</span>
+        <h2>Capture an opportunity</h2>
+        <p>Save a lightweight idea so it can be reviewed without interrupting active work.</p>
+    </div>
 
-<MudButton OnClick="@CreateNewIdea">
-    Create
-</MudButton>
+    <EditForm Model="newIdea" OnValidSubmit="CreateNewIdea" class="form-card">
+        <DataAnnotationsValidator />
+        <div class="form-grid">
+            <label class="input-control">
+                <span>Idea title</span>
+                <InputText @bind-Value="newIdea.Title" placeholder="Improve onboarding checklist" />
+                <ValidationMessage For="@(() => newIdea.Title)" />
+            </label>
+
+            <label class="input-control">
+                <span>Description</span>
+                <InputTextArea @bind-Value="newIdea.Description" placeholder="Why it matters and what to explore" rows="6" />
+                <ValidationMessage For="@(() => newIdea.Description)" />
+            </label>
+        </div>
+
+        <div class="form-actions">
+            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Cancel</a>
+            <button class="btn btn-primary" type="submit">Save idea</button>
+        </div>
+    </EditForm>
+</section>
 
 @code {
     [Parameter]

@@ -1,75 +1,322 @@
 @page "/projects/{Id:guid}"
-@using MudBlazor
 @using Planora.Web.Models.DTOs
 @using System.Net.Http.Json
 @using Planora.Web.Models.DTOs.Project
 @using Microsoft.AspNetCore.Components
 
 @inject HttpClient Http
-<MudButtonGroup Color="Color.Primary" Variant="Variant.Filled">
-    <MudButton Href="@($"/tasks/create/{Id}")">Create Task</MudButton>
-    <MudButton Href="@($"/ideas/create/{Id}")">Create Idea</MudButton>
-    <MudButton Href="@($"/links/create/{Id}")">Create Link</MudButton>
-    <MudButton Href="@($"/notes/create/{Id}")">Create Note</MudButton>
-</MudButtonGroup>
 
-@if (project != null)
+@if (!string.IsNullOrWhiteSpace(loadError))
 {
-    <MudPaper Class="pa-4 mt-4">
-        <MudText Typo="Typo.h4">@project.Name</MudText>
-        <MudText Typo="Typo.subtitle1">@project.Description</MudText>
-        @if (project.Deadline.HasValue)
-        {
-            <MudText Typo="Typo.subtitle2">Deadline: @project.Deadline.Value.LocalDateTime.ToShortDateString()</MudText>
-        }
-    </MudPaper>
+    <div class="empty-state">@loadError</div>
+}
+else if (project != null)
+{
+    <section class="project-hero">
+        <div>
+            <span class="status-badge @StatusClass(project.Status)">@project.Status</span>
+            <h2>@project.Name</h2>
+            <p>@(string.IsNullOrWhiteSpace(project.Description) ? "No project description has been added yet." : project.Description)</p>
+        </div>
+        <div class="hero-actions">
+            <a class="btn btn-secondary" href="/projects">Back to projects</a>
+            <a class="btn btn-primary" href="@($"/tasks/create/{Id}")">Create task</a>
+        </div>
+    </section>
 
-    <MudTabs Class="mt-4">
-        <MudTabPanel Text="Tasks">
-            <MudList T="object">
-                @foreach (var task in project.Tasks)
+    <nav class="module-tabs" aria-label="Project sections">
+        @foreach (var tab in ProjectTabs)
+        {
+            <button class="module-tab @(activeTab == tab ? "is-active" : string.Empty)" type="button" @onclick="() => activeTab = tab">@tab</button>
+        }
+    </nav>
+
+    @if (activeTab == "Overview")
+    {
+        <section class="content-grid">
+            <div class="panel panel-large">
+                <div class="panel-header">
+                    <div>
+                        <span class="section-kicker">Overview</span>
+                        <h2>Project snapshot</h2>
+                    </div>
+                </div>
+                <div class="stats-grid compact-stats">
+                    <div class="metric-card">
+                        <span>Tasks</span>
+                        <strong>@project.Tasks.Count</strong>
+                        <small>@CompletedTaskCount completed</small>
+                    </div>
+                    <div class="metric-card">
+                        <span>Ideas</span>
+                        <strong>@project.Ideas.Count</strong>
+                        <small>Captured for review</small>
+                    </div>
+                    <div class="metric-card">
+                        <span>Resources</span>
+                        <strong>@project.Links.Count</strong>
+                        <small>Links attached</small>
+                    </div>
+                    <div class="metric-card">
+                        <span>Deadline</span>
+                        <strong>@DeadlineMetric</strong>
+                        <small>@DeadlineSubtext</small>
+                    </div>
+                </div>
+                <div class="project-summary-block">
+                    <h3>Purpose</h3>
+                    <p>@(string.IsNullOrWhiteSpace(project.Description) ? "Add a project description in settings to clarify scope and outcomes." : project.Description)</p>
+                </div>
+            </div>
+
+            <aside class="side-column">
+                <div class="panel">
+                    <div class="panel-header simple">
+                        <div>
+                            <span class="section-kicker">Knowledge</span>
+                            <h2>Recent notes</h2>
+                        </div>
+                    </div>
+                    <div class="activity-list">
+                        @foreach (var note in project.Notes.OrderByDescending(note => note.CreatedAt).Take(4))
+                        {
+                            <div class="activity-row">
+                                <span class="activity-dot warning"></span>
+                                <span>
+                                    <strong>Note</strong>
+                                    <small>@note.Content</small>
+                                </span>
+                            </div>
+                        }
+                        @if (!project.Notes.Any())
+                        {
+                            <div class="empty-state compact">No notes yet.</div>
+                        }
+                    </div>
+                </div>
+            </aside>
+        </section>
+    }
+    else if (activeTab == "Zadania")
+    {
+        <section class="panel panel-large">
+            <div class="panel-header">
+                <div>
+                    <span class="section-kicker">Project tasks</span>
+                    <h2>Zadania projektu</h2>
+                </div>
+                <div class="toolbar">
+                    <label class="input-control compact">
+                        <span>Search</span>
+                        <input type="search" placeholder="Find task" @bind="taskSearch" @bind:event="oninput" />
+                    </label>
+                    <select class="select-control" @bind="taskFilter" aria-label="Filter tasks">
+                        <option value="All">All tasks</option>
+                        <option value="Open">Open</option>
+                        <option value="Done">Completed</option>
+                    </select>
+                    <a class="btn btn-primary" href="@($"/tasks/create/{Id}")">Add task</a>
+                </div>
+            </div>
+
+            <div class="task-list">
+                @foreach (var task in FilteredTasks)
                 {
-                    <MudListItem T="object">@task.Title</MudListItem>
+                    <article class="task-card">
+                        <div class="task-checkbox @(task.IsCompleted ? "is-complete" : string.Empty)" aria-hidden="true"></div>
+                        <div class="task-content">
+                            <div class="task-title-row">
+                                <h3>@task.Title</h3>
+                                <span class="priority-pill @PriorityClass(task.Deadline)">@PriorityLabel(task.Deadline)</span>
+                            </div>
+                            <p>@(string.IsNullOrWhiteSpace(task.Description) ? "No description." : task.Description)</p>
+                            <div class="task-meta">
+                                <span>@FormatDate(task.Deadline)</span>
+                                <span>@(task.IsCompleted ? "Completed" : "In progress")</span>
+                            </div>
+                        </div>
+                    </article>
                 }
-            </MudList>
-        </MudTabPanel>
-        <MudTabPanel Text="Ideas">
-            <MudList T="object">
-                @foreach (var idea in project.Ideas)
+                @if (!FilteredTasks.Any())
                 {
-                    <MudListItem T="object">@idea.Title</MudListItem>
+                    <div class="empty-state">No tasks match the current filters.</div>
                 }
-            </MudList>
-        </MudTabPanel>
-        <MudTabPanel Text="Links">
-            <MudList T="object">
-                @foreach (var link in project.Links)
-                {
-                    <MudListItem T="object"><a href="@link.Url" target="_blank">@link.Description</a></MudListItem>
-                }
-            </MudList>
-        </MudTabPanel>
-        <MudTabPanel Text="Notes">
-            <MudList T="object">
-                @foreach (var note in project.Notes)
-                {
-                    <MudListItem T="object">@note.Content</MudListItem>
-                }
-            </MudList>
-        </MudTabPanel>
-    </MudTabs>
+            </div>
+        </section>
+    }
+    else if (activeTab == "Członkowie")
+    {
+        <section class="panel panel-large">
+            <div class="panel-header">
+                <div>
+                    <span class="section-kicker">Members</span>
+                    <h2>Członkowie projektu</h2>
+                </div>
+            </div>
+            <div class="member-grid">
+                <div class="member-card">
+                    <span class="profile-avatar">M</span>
+                    <div>
+                        <strong>Mateusz</strong>
+                        <small>Owner</small>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <span class="profile-avatar muted-avatar">PM</span>
+                    <div>
+                        <strong>Project Manager</strong>
+                        <small>Planning</small>
+                    </div>
+                </div>
+                <div class="member-card">
+                    <span class="profile-avatar muted-avatar">FE</span>
+                    <div>
+                        <strong>Frontend</strong>
+                        <small>Delivery</small>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+    else if (activeTab == "Statystyki")
+    {
+        <section class="content-grid">
+            <div class="panel panel-large">
+                <div class="panel-header">
+                    <div>
+                        <span class="section-kicker">Stats</span>
+                        <h2>Statystyki projektu</h2>
+                    </div>
+                </div>
+                <div class="productivity-chart large-chart" aria-label="Project productivity chart">
+                    @foreach (var value in ProjectVelocity)
+                    {
+                        <span style="height: @value%"></span>
+                    }
+                </div>
+            </div>
+            <aside class="side-column">
+                <div class="panel">
+                    <div class="insight-grid compact-insights">
+                        <div class="insight-row">
+                            <span>Completion</span>
+                            <strong>@ProjectCompletion%</strong>
+                        </div>
+                        <div class="insight-row">
+                            <span>Open tasks</span>
+                            <strong>@OpenTaskCount</strong>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    }
+    else if (activeTab == "Ustawienia")
+    {
+        <section class="panel panel-large">
+            <div class="panel-header">
+                <div>
+                    <span class="section-kicker">Settings</span>
+                    <h2>Ustawienia projektu</h2>
+                </div>
+                <a class="btn btn-secondary" href="/projects">Manage in Projects</a>
+            </div>
+            <div class="settings-list">
+                <div class="settings-row">
+                    <span>
+                        <strong>Project identity</strong>
+                        <small>Name, description, status, and deadline are managed in the Projects module.</small>
+                    </span>
+                </div>
+                <div class="settings-row danger-settings">
+                    <span>
+                        <strong>Danger zone</strong>
+                        <small>Delete actions are intentionally centralized in Projects to avoid accidental removal.</small>
+                    </span>
+                </div>
+            </div>
+        </section>
+    }
 }
 else
 {
-    <p>Loading...</p>
+    <div class="empty-state">Loading project...</div>
 }
 
 @code {
     [Parameter]
     public Guid Id { get; set; }
+
+    private readonly string[] ProjectTabs = { "Overview", "Zadania", "Członkowie", "Statystyki", "Ustawienia" };
     private ProjectDetailDto? project;
-    protected override async Task OnInitializedAsync()
+    private string taskSearch = string.Empty;
+    private string taskFilter = "All";
+    private string activeTab = "Overview";
+    private string? loadError;
+
+    private int CompletedTaskCount => project?.Tasks.Count(task => task.IsCompleted) ?? 0;
+    private int OpenTaskCount => project?.Tasks.Count(task => !task.IsCompleted) ?? 0;
+    private int ProjectCompletion => project is null || project.Tasks.Count == 0 ? 0 : (int)Math.Round(CompletedTaskCount * 100.0 / project.Tasks.Count);
+    private string DeadlineMetric => project?.Deadline.HasValue == true ? project.Deadline.Value.LocalDateTime.ToString("MMM d") : "None";
+    private string DeadlineSubtext => project?.Deadline.HasValue == true ? project.Deadline.Value.LocalDateTime.ToString("yyyy") : "No date selected";
+    private int[] ProjectVelocity => new[] { 34, 48, 56, 44, 70, 78, 66 };
+
+    private IEnumerable<Planora.Web.Models.DTOs.Task.ProjectTaskDto> FilteredTasks => (project?.Tasks ?? Enumerable.Empty<Planora.Web.Models.DTOs.Task.ProjectTaskDto>())
+        .Where(task => string.IsNullOrWhiteSpace(taskSearch)
+            || task.Title.Contains(taskSearch, StringComparison.OrdinalIgnoreCase)
+            || (task.Description?.Contains(taskSearch, StringComparison.OrdinalIgnoreCase) ?? false))
+        .Where(task => taskFilter == "All" || (taskFilter == "Done" && task.IsCompleted) || (taskFilter == "Open" && !task.IsCompleted))
+        .OrderBy(task => task.IsCompleted)
+        .ThenBy(task => task.Deadline ?? DateTimeOffset.MaxValue);
+
+    protected override async System.Threading.Tasks.Task OnInitializedAsync()
     {
-        project = await Http.GetFromJsonAsync<ProjectDetailDto>($"api/project/{Id}");
+        try
+        {
+            project = await Http.GetFromJsonAsync<ProjectDetailDto>($"api/project/{Id}");
+        }
+        catch (Exception)
+        {
+            loadError = "Project details could not be loaded. Check that the Planora API and database are running.";
+        }
+    }
+
+    private static string StatusClass(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.Active => "status-active",
+            ProjectStatus.Completed => "status-completed",
+            ProjectStatus.Inactive => "status-inactive",
+            ProjectStatus.Archived => "status-archived",
+            _ => "status-inactive"
+        };
+    }
+
+    private static string FormatDate(DateTimeOffset? date)
+    {
+        return date.HasValue ? $"Due {date.Value.LocalDateTime:MMM d, yyyy}" : "No due date";
+    }
+
+    private static string PriorityLabel(DateTimeOffset? deadline)
+    {
+        if (!deadline.HasValue)
+        {
+            return "Normal";
+        }
+
+        var days = (deadline.Value.LocalDateTime.Date - DateTime.Now.Date).TotalDays;
+        return days <= 2 ? "High" : days <= 7 ? "Medium" : "Normal";
+    }
+
+    private static string PriorityClass(DateTimeOffset? deadline)
+    {
+        if (!deadline.HasValue)
+        {
+            return "priority-normal";
+        }
+
+        var days = (deadline.Value.LocalDateTime.Date - DateTime.Now.Date).TotalDays;
+        return days <= 2 ? "priority-high" : days <= 7 ? "priority-medium" : "priority-normal";
     }
 }

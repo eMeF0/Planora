@@ -1,47 +1,209 @@
 ﻿@page "/"
-@using MudBlazor
 @using Planora.Web.Models.DTOs
 @using System.Net.Http.Json
 @inject HttpClient Http
-<MudButton Variant="Variant.Filled" EndIcon="@Icons.Material.Filled.Send" Color="Color.Primary" href="/projects/create">
-    Create Project
-</MudButton>
-<MudGrid>
-    @foreach (var project in projects ?? Enumerable.Empty<ProjectSummaryDto>())
-    {
-        <MudItem xs="12" sm="6" md="4">
-            <MudCard>
-                <MudCardContent>
 
-                    <MudText Typo="Typo.h5">
-                        @project.Name
-                    </MudText>
+<section class="dashboard-grid">
+    <div class="welcome-card">
+        <div>
+            <span class="section-kicker">Command center</span>
+            <h2>Dashboard</h2>
+            <p>Monitor today's workload, deadlines, activity, and productivity without managing projects from this view.</p>
+        </div>
+    </div>
 
-                    <MudText>
-                        @project.Description
-                    </MudText>
+    <div class="metric-card">
+        <span>Aktywne obszary</span>
+        <strong>@ActiveProjects</strong>
+        <small>Workspaces currently in motion</small>
+    </div>
 
-                    <MudChip T="string" Color="Color.Success">
-                        @project.Status.ToString()
-                    </MudChip>
+    <div class="metric-card">
+        <span>Nadchodzące terminy</span>
+        <strong>@DueSoonProjects</strong>
+        <small>Due in the next 7 days</small>
+    </div>
 
-                </MudCardContent>
+    <div class="metric-card">
+        <span>Ukończone</span>
+        <strong>@CompletionRate%</strong>
+        <small>Completion signal</small>
+    </div>
+</section>
 
-                <MudCardActions>
-                    <MudButton Color="Color.Primary" Href="@($"/projects/{project.Id}")">
-                        Open Project
-                    </MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
-    }
-</MudGrid>
+@if (!string.IsNullOrWhiteSpace(loadError))
+{
+    <div class="empty-state">@loadError</div>
+}
+
+<section class="dashboard-command-grid">
+    <div class="panel panel-large">
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">Statystyki</span>
+                <h2>Podsumowanie aktywności</h2>
+            </div>
+        </div>
+
+        <div class="insight-grid">
+            <div class="insight-row">
+                <span>Aktywne</span>
+                <strong>@ActiveProjects</strong>
+            </div>
+            <div class="insight-row">
+                <span>Ukończone</span>
+                <strong>@CompletedProjects</strong>
+            </div>
+            <div class="insight-row">
+                <span>Po terminie</span>
+                <strong>@OverdueProjects</strong>
+            </div>
+        </div>
+
+        <div class="productivity-chart" aria-label="Productivity chart">
+            @foreach (var value in ProductivityValues)
+            {
+                <span style="height: @value%"></span>
+            }
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header simple">
+            <div>
+                <span class="section-kicker">Dzisiaj</span>
+                <h2>Zadania na dziś</h2>
+            </div>
+        </div>
+        <div class="task-list">
+            <article class="task-card compact-task">
+                <div class="task-checkbox" aria-hidden="true"></div>
+                <div class="task-content">
+                    <div class="task-title-row">
+                        <h3>Review priority work</h3>
+                        <span class="priority-pill priority-medium">Focus</span>
+                    </div>
+                    <p>Use project task views to plan execution. Global task feed can be connected when the API exposes it.</p>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header simple">
+            <div>
+                <span class="section-kicker">Terminy</span>
+                <h2>Nadchodzące</h2>
+            </div>
+        </div>
+        <div class="activity-list">
+            @foreach (var project in UpcomingProjects)
+            {
+                <div class="activity-row">
+                    <span class="activity-dot warning"></span>
+                    <span>
+                        <strong>@project.Name</strong>
+                        <small>@FormatDeadline(project.Deadline)</small>
+                    </span>
+                </div>
+            }
+            @if (!UpcomingProjects.Any())
+            {
+                <div class="empty-state compact">No upcoming deadlines.</div>
+            }
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header simple">
+            <div>
+                <span class="section-kicker">Kalendarz</span>
+                <h2>This week</h2>
+            </div>
+        </div>
+        <div class="calendar-strip" aria-label="Weekly calendar">
+            @foreach (var day in WeekDays)
+            {
+                <div class="calendar-day @(day.Date == DateTime.Today ? "is-today" : string.Empty)">
+                    <span>@day.ToString("ddd")</span>
+                    <strong>@day.Day</strong>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header simple">
+            <div>
+                <span class="section-kicker">Aktywność</span>
+                <h2>Ostatnia aktywność</h2>
+            </div>
+        </div>
+        <div class="activity-list">
+            @foreach (var project in RecentProjects)
+            {
+                <div class="activity-row">
+                    <span class="activity-dot success"></span>
+                    <span>
+                        <strong>@project.Name</strong>
+                        <small>Updated signal from @project.CreatedAt.LocalDateTime.ToString("MMM d, yyyy")</small>
+                    </span>
+                </div>
+            }
+            @if (!RecentProjects.Any())
+            {
+                <div class="empty-state compact">No recent activity.</div>
+            }
+        </div>
+    </div>
+</section>
 
 @code {
     private List<ProjectSummaryDto>? projects;
+    private string? loadError;
+
+    private IEnumerable<ProjectSummaryDto> ProjectItems => projects ?? Enumerable.Empty<ProjectSummaryDto>();
+    private int ActiveProjects => ProjectItems.Count(project => project.Status == ProjectStatus.Active);
+    private int CompletedProjects => ProjectItems.Count(project => project.Status == ProjectStatus.Completed);
+    private int OverdueProjects => ProjectItems.Count(project => project.Deadline.HasValue && project.Deadline.Value.LocalDateTime.Date < DateTime.Today && project.Status != ProjectStatus.Completed);
+    private int DueSoonProjects => ProjectItems.Count(project => project.Deadline.HasValue && project.Deadline.Value.LocalDateTime.Date <= DateTime.Today.AddDays(7) && project.Deadline.Value.LocalDateTime.Date >= DateTime.Today);
+    private int CompletionRate => ProjectItems.Any() ? (int)Math.Round(CompletedProjects * 100.0 / ProjectItems.Count()) : 0;
+
+    private int[] ProductivityValues => new[] { 42, 58, 50, 74, 66, 82, 70 };
+
+    private IEnumerable<DateTime> WeekDays
+    {
+        get
+        {
+            var start = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek + 1);
+            return Enumerable.Range(0, 7).Select(offset => start.AddDays(offset));
+        }
+    }
+
+    private IEnumerable<ProjectSummaryDto> UpcomingProjects => ProjectItems
+        .Where(project => project.Deadline.HasValue)
+        .OrderBy(project => project.Deadline)
+        .Take(5);
+
+    private IEnumerable<ProjectSummaryDto> RecentProjects => ProjectItems
+        .OrderByDescending(project => project.CreatedAt)
+        .Take(5);
 
     protected override async System.Threading.Tasks.Task OnInitializedAsync()
     {
-        projects = await Http.GetFromJsonAsync<List<ProjectSummaryDto>>("api/project");
+        try
+        {
+            projects = await Http.GetFromJsonAsync<List<ProjectSummaryDto>>("api/project");
+        }
+        catch (Exception)
+        {
+            loadError = "Dashboard data could not be loaded. Check that the Planora API and database are running.";
+            projects = new List<ProjectSummaryDto>();
+        }
+    }
+
+    private static string FormatDeadline(DateTimeOffset? deadline)
+    {
+        return deadline.HasValue ? $"Due {deadline.Value.LocalDateTime:MMM d}" : "No deadline";
     }
 }
