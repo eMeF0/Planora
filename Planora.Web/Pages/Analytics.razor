@@ -1,0 +1,249 @@
+@page "/analytics"
+@using Planora.Web.Models.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<section class="project-hero">
+    <div>
+        <span class="section-kicker">Analityka</span>
+        <h2>Wyniki projektów</h2>
+        <p>Karty i wykresy pokazujące stan portfela projektów, terminy oraz tempo domykania pracy.</p>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <div class="metric-card">
+        <span>Wszystkie projekty</span>
+        <strong>@TotalProjects</strong>
+        <small>Łączna liczba obszarów pracy</small>
+    </div>
+    <div class="metric-card">
+        <span>Aktywne</span>
+        <strong>@ActiveProjects</strong>
+        <small>Projekty w realizacji</small>
+    </div>
+    <div class="metric-card">
+        <span>Ukończone</span>
+        <strong>@CompletionRate%</strong>
+        <small>Udział zamkniętych projektów</small>
+    </div>
+    <div class="metric-card">
+        <span>Ryzyko terminu</span>
+        <strong>@DeadlineRisk</strong>
+        <small>Po terminie lub w ciągu 7 dni</small>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(loadError))
+{
+    <div class="empty-state">@loadError</div>
+}
+else if (projects is null)
+{
+    <div class="empty-state">Ładowanie analityki...</div>
+}
+
+<section class="dashboard-command-grid">
+    <div class="panel panel-large">
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">Status</span>
+                <h2>Rozkład projektów</h2>
+            </div>
+        </div>
+
+        <div class="analytics-split">
+            <div class="donut-chart" style="@DonutChartStyle">
+                <span>@CompletionRate%</span>
+            </div>
+
+            <div class="status-breakdown">
+                @foreach (var status in StatusRows)
+                {
+                    <div class="status-row">
+                        <span class="legend-dot @status.ClassName"></span>
+                        <span>@status.Label</span>
+                        <strong>@status.Count</strong>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header simple">
+            <div>
+                <span class="section-kicker">Terminy</span>
+                <h2>Kondycja terminów</h2>
+            </div>
+        </div>
+
+        <div class="insight-grid compact-insights">
+            <div class="insight-row">
+                <span>Po terminie</span>
+                <strong>@OverdueProjects</strong>
+            </div>
+            <div class="insight-row">
+                <span>W ciągu 7 dni</span>
+                <strong>@DueSoonProjects</strong>
+            </div>
+            <div class="insight-row">
+                <span>Bez terminu</span>
+                <strong>@ProjectsWithoutDeadline</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel panel-large">
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">Miesiące</span>
+                <h2>Terminy w kolejnych miesiącach</h2>
+            </div>
+        </div>
+
+        <div class="analytics-bars" aria-label="Wykres terminów miesięcznych">
+            @foreach (var month in MonthlyRows)
+            {
+                <div class="analytics-bar-row">
+                    <span>@month.Label</span>
+                    <div class="analytics-bar-track">
+                        <div class="analytics-bar-fill" style="width: @month.Width%"></div>
+                    </div>
+                    <strong>@month.Count</strong>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="panel-header simple">
+            <div>
+                <span class="section-kicker">Top</span>
+                <h2>Najbliższe projekty</h2>
+            </div>
+        </div>
+
+        <div class="deadline-card-list">
+            @foreach (var project in UpcomingProjects)
+            {
+                <a class="deadline-card" href="@($"/projects/{project.Id}")">
+                    <span class="status-badge @StatusClass(project.Status)">@StatusLabel(project.Status)</span>
+                    <strong>@project.Name</strong>
+                    <small>@FormatDeadline(project.Deadline)</small>
+                </a>
+            }
+            @if (!UpcomingProjects.Any())
+            {
+                <div class="empty-state compact">Brak nadchodzących projektów.</div>
+            }
+        </div>
+    </div>
+</section>
+
+@code {
+    private List<ProjectSummaryDto>? projects;
+    private string? loadError;
+
+    private IEnumerable<ProjectSummaryDto> ProjectItems => projects ?? Enumerable.Empty<ProjectSummaryDto>();
+    private int TotalProjects => ProjectItems.Count();
+    private int ActiveProjects => ProjectItems.Count(project => project.Status == ProjectStatus.Active);
+    private int CompletedProjects => ProjectItems.Count(project => project.Status == ProjectStatus.Completed);
+    private int InactiveProjects => ProjectItems.Count(project => project.Status == ProjectStatus.Inactive);
+    private int ArchivedProjects => ProjectItems.Count(project => project.Status == ProjectStatus.Archived);
+    private int OverdueProjects => ProjectItems.Count(project => project.Deadline.HasValue && project.Deadline.Value.LocalDateTime.Date < DateTime.Today && project.Status != ProjectStatus.Completed);
+    private int DueSoonProjects => ProjectItems.Count(project => project.Deadline.HasValue && project.Deadline.Value.LocalDateTime.Date >= DateTime.Today && project.Deadline.Value.LocalDateTime.Date <= DateTime.Today.AddDays(7));
+    private int ProjectsWithoutDeadline => ProjectItems.Count(project => !project.Deadline.HasValue);
+    private int DeadlineRisk => OverdueProjects + DueSoonProjects;
+    private int CompletionRate => TotalProjects > 0 ? (int)Math.Round(CompletedProjects * 100.0 / TotalProjects) : 0;
+
+    private int ActiveDegrees => DegreesFor(ActiveProjects);
+    private int CompletedDegrees => DegreesFor(CompletedProjects);
+    private int InactiveDegrees => DegreesFor(InactiveProjects);
+    private string DonutChartStyle => $"background: conic-gradient(#2563eb 0 {ActiveDegrees}deg, #16a34a {ActiveDegrees}deg {ActiveDegrees + CompletedDegrees}deg, #64748b {ActiveDegrees + CompletedDegrees}deg {ActiveDegrees + CompletedDegrees + InactiveDegrees}deg, #f59e0b {ActiveDegrees + CompletedDegrees + InactiveDegrees}deg 360deg);";
+
+    private IEnumerable<StatusRow> StatusRows => new[]
+    {
+        new StatusRow("Aktywne", ActiveProjects, "legend-active"),
+        new StatusRow("Ukończone", CompletedProjects, "legend-completed"),
+        new StatusRow("Nieaktywne", InactiveProjects, "legend-inactive"),
+        new StatusRow("Archiwalne", ArchivedProjects, "legend-archived")
+    };
+
+    private IEnumerable<MonthRow> MonthlyRows
+    {
+        get
+        {
+            var rows = Enumerable.Range(0, 6)
+                .Select(offset =>
+                {
+                    var month = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1).AddMonths(offset);
+                    var count = ProjectItems.Count(project => project.Deadline.HasValue
+                        && project.Deadline.Value.LocalDateTime.Year == month.Year
+                        && project.Deadline.Value.LocalDateTime.Month == month.Month);
+
+                    return new { Month = month, Count = count };
+                })
+                .ToList();
+
+            var max = Math.Max(rows.Max(row => row.Count), 1);
+
+            return rows.Select(row => new MonthRow(row.Month.ToString("MMM yyyy"), row.Count, row.Count * 100 / max));
+        }
+    }
+
+    private IEnumerable<ProjectSummaryDto> UpcomingProjects => ProjectItems
+        .Where(project => project.Deadline.HasValue && project.Deadline.Value.LocalDateTime.Date >= DateTime.Today)
+        .OrderBy(project => project.Deadline)
+        .Take(5);
+
+    protected override async System.Threading.Tasks.Task OnInitializedAsync()
+    {
+        try
+        {
+            projects = await Http.GetFromJsonAsync<List<ProjectSummaryDto>>("api/project");
+        }
+        catch (Exception)
+        {
+            loadError = "Nie udało się załadować danych analityki. Sprawdź, czy Planora API i baza danych działają.";
+            projects = new List<ProjectSummaryDto>();
+        }
+    }
+
+    private int DegreesFor(int value)
+    {
+        return TotalProjects > 0 ? (int)Math.Round(value * 360.0 / TotalProjects) : 0;
+    }
+
+    private static string FormatDeadline(DateTimeOffset? deadline)
+    {
+        return deadline.HasValue ? deadline.Value.LocalDateTime.ToString("dd MMM yyyy") : "Brak terminu";
+    }
+
+    private static string StatusClass(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.Active => "status-active",
+            ProjectStatus.Completed => "status-completed",
+            ProjectStatus.Inactive => "status-inactive",
+            ProjectStatus.Archived => "status-archived",
+            _ => "status-inactive"
+        };
+    }
+
+    private static string StatusLabel(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.Active => "Aktywny",
+            ProjectStatus.Completed => "Ukończony",
+            ProjectStatus.Inactive => "Nieaktywny",
+            ProjectStatus.Archived => "Archiwalny",
+            _ => "Nieaktywny"
+        };
+    }
+
+    private sealed record StatusRow(string Label, int Count, string ClassName);
+    private sealed record MonthRow(string Label, int Count, int Width);
+}

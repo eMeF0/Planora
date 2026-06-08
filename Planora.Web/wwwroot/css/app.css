@@ -768,6 +768,265 @@ a, .btn-link {
     border-color: #bfdbfe;
 }
 
+.month-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+}
+
+.month-weekday {
+    padding: 10px;
+    color: var(--color-muted);
+    background: #f8fafc;
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 16px;
+    text-transform: uppercase;
+}
+
+.month-weekday:nth-child(7) {
+    border-right: 0;
+}
+
+.month-day {
+    min-height: 122px;
+    padding: 10px;
+    background: var(--color-surface);
+    border-right: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.month-day:nth-child(7n) {
+    border-right: 0;
+}
+
+.month-day.is-muted {
+    background: #f8fafc;
+}
+
+.month-day.is-muted .month-day-number {
+    color: #94a3b8;
+}
+
+.month-day.is-current {
+    background: #eff6ff;
+}
+
+.month-day-number {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    color: var(--color-text);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.month-day.is-current .month-day-number {
+    color: #fff;
+    background: var(--color-primary);
+    border-radius: 8px;
+}
+
+.month-events,
+.deadline-card-list,
+.status-breakdown,
+.analytics-bars {
+    display: grid;
+    gap: 8px;
+}
+
+.month-events {
+    margin-top: 8px;
+}
+
+.calendar-event,
+.calendar-more {
+    display: block;
+    overflow: hidden;
+    min-height: 24px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 750;
+    line-height: 16px;
+    text-overflow: ellipsis;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.calendar-event.status-active {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.calendar-event.status-completed {
+    color: #15803d;
+    background: #dcfce7;
+}
+
+.calendar-event.status-inactive {
+    color: #475569;
+    background: #f1f5f9;
+}
+
+.calendar-event.status-archived {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+.calendar-more {
+    color: var(--color-muted);
+    background: #f8fafc;
+}
+
+.deadline-card {
+    display: grid;
+    gap: 8px;
+    padding: 14px;
+    color: var(--color-text);
+    background: #f8fafc;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    text-decoration: none;
+}
+
+.deadline-card:hover {
+    border-color: var(--color-border-strong);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.deadline-card.overdue {
+    background: #fff7ed;
+    border-color: #fed7aa;
+}
+
+.deadline-card strong,
+.deadline-card small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.deadline-card strong {
+    color: var(--color-text);
+    font-size: 14px;
+    font-weight: 750;
+    line-height: 20px;
+}
+
+.deadline-card small {
+    color: var(--color-muted);
+    font-size: 13px;
+}
+
+.analytics-split {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+    align-items: center;
+}
+
+.donut-chart {
+    position: relative;
+    display: grid;
+    width: 220px;
+    height: 220px;
+    place-items: center;
+    border-radius: 50%;
+}
+
+.donut-chart::after {
+    position: absolute;
+    inset: 42px;
+    background: var(--color-surface);
+    border-radius: 50%;
+    content: "";
+}
+
+.donut-chart span {
+    position: relative;
+    z-index: 1;
+    color: var(--color-text);
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 40px;
+}
+
+.status-row,
+.analytics-bar-row {
+    display: grid;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+}
+
+.status-row {
+    grid-template-columns: 10px minmax(0, 1fr) auto;
+}
+
+.status-row span,
+.analytics-bar-row span {
+    color: var(--color-muted);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.status-row strong,
+.analytics-bar-row strong {
+    color: var(--color-text);
+    font-size: 15px;
+    font-weight: 800;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-active {
+    background: var(--color-primary);
+}
+
+.legend-completed {
+    background: var(--color-success);
+}
+
+.legend-inactive {
+    background: var(--color-muted);
+}
+
+.legend-archived {
+    background: var(--color-warning);
+}
+
+.analytics-bar-row {
+    grid-template-columns: 88px minmax(0, 1fr) 32px;
+}
+
+.analytics-bar-track {
+    height: 10px;
+    overflow: hidden;
+    background: #e2e8f0;
+    border-radius: 999px;
+}
+
+.analytics-bar-fill {
+    height: 100%;
+    min-width: 6px;
+    background: var(--color-primary);
+    border-radius: inherit;
+}
+
 .management-table {
     display: grid;
     overflow: hidden;
@@ -1058,6 +1317,10 @@ a, .btn-link {
     .side-column {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .analytics-split {
+        grid-template-columns: 1fr;
+    }
 }
 
 @media (max-width: 760px) {
@@ -1077,6 +1340,41 @@ a, .btn-link {
 
     .calendar-strip {
         grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .month-calendar {
+        grid-template-columns: 1fr;
+        border: 0;
+        gap: 10px;
+        overflow: visible;
+    }
+
+    .month-weekday {
+        display: none;
+    }
+
+    .month-day {
+        min-height: 96px;
+        border: 1px solid var(--color-border);
+        border-radius: 12px;
+    }
+
+    .analytics-split {
+        justify-items: stretch;
+    }
+
+    .donut-chart {
+        width: 180px;
+        height: 180px;
+        justify-self: center;
+    }
+
+    .donut-chart::after {
+        inset: 34px;
+    }
+
+    .analytics-bar-row {
+        grid-template-columns: 76px minmax(0, 1fr) 28px;
     }
 
     .management-table {
@@ -1164,7 +1462,7 @@ a, .btn-link {
 }
 
     .blazor-error-boundary::after {
-        content: "An error has occurred."
+        content: "Wystąpił błąd."
     }
 
 .loading-progress {
@@ -1198,7 +1496,7 @@ a, .btn-link {
 }
 
     .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+        content: var(--blazor-load-percentage-text, "Ładowanie");
     }
 
 code {

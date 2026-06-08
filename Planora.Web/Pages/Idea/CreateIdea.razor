@@ -5,30 +5,30 @@
 
 <section class="form-layout">
     <div class="form-intro">
-        <span class="section-kicker">Idea</span>
-        <h2>Capture an opportunity</h2>
-        <p>Save a lightweight idea so it can be reviewed without interrupting active work.</p>
+        <span class="section-kicker">Pomysł</span>
+        <h2>Zapisz nową szansę</h2>
+        <p>Dodaj krótki pomysł, żeby można było wrócić do niego bez przerywania bieżącej pracy.</p>
     </div>
 
     <EditForm Model="newIdea" OnValidSubmit="CreateNewIdea" class="form-card">
         <DataAnnotationsValidator />
         <div class="form-grid">
             <label class="input-control">
-                <span>Idea title</span>
-                <InputText @bind-Value="newIdea.Title" placeholder="Improve onboarding checklist" />
+                <span>Tytuł pomysłu</span>
+                <InputText @bind-Value="newIdea.Title" placeholder="Usprawnić checklistę wdrożenia" />
                 <ValidationMessage For="@(() => newIdea.Title)" />
             </label>
 
             <label class="input-control">
-                <span>Description</span>
-                <InputTextArea @bind-Value="newIdea.Description" placeholder="Why it matters and what to explore" rows="6" />
+                <span>Opis</span>
+                <InputTextArea @bind-Value="newIdea.Description" placeholder="Dlaczego to ważne i co warto sprawdzić" rows="6" />
                 <ValidationMessage For="@(() => newIdea.Description)" />
             </label>
         </div>
 
         <div class="form-actions">
-            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Cancel</a>
-            <button class="btn btn-primary" type="submit">Save idea</button>
+            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Anuluj</a>
+            <button class="btn btn-primary" type="submit">Zapisz pomysł</button>
         </div>
     </EditForm>
 </section>

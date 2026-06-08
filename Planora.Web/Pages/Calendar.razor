@@ -1,0 +1,234 @@
+@page "/calendar"
+@using Planora.Web.Models.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<section class="project-hero">
+    <div>
+        <span class="section-kicker">Kalendarz</span>
+        <h2>Plan terminów</h2>
+        <p>Przegląd projektów z terminami w bieżącym miesiącu, nadchodzących zadań i zaległych elementów.</p>
+    </div>
+</section>
+
+<section class="stats-grid">
+    <div class="metric-card">
+        <span>Ten miesiąc</span>
+        <strong>@ThisMonthProjects</strong>
+        <small>Projekty z terminem w aktualnym miesiącu</small>
+    </div>
+    <div class="metric-card">
+        <span>Ten tydzień</span>
+        <strong>@ThisWeekProjects</strong>
+        <small>Terminy od poniedziałku do niedzieli</small>
+    </div>
+    <div class="metric-card">
+        <span>Dzisiaj</span>
+        <strong>@TodayProjects</strong>
+        <small>Terminy przypadające na dziś</small>
+    </div>
+    <div class="metric-card">
+        <span>Po terminie</span>
+        <strong>@OverdueProjects</strong>
+        <small>Aktywne projekty po terminie</small>
+    </div>
+</section>
+
+@if (!string.IsNullOrWhiteSpace(loadError))
+{
+    <div class="empty-state">@loadError</div>
+}
+else if (projects is null)
+{
+    <div class="empty-state">Ładowanie kalendarza...</div>
+}
+
+<section class="management-grid">
+    <div class="panel panel-large">
+        <div class="panel-header">
+            <div>
+                <span class="section-kicker">@MonthStart.ToString("MMMM yyyy")</span>
+                <h2>Kalendarz projektów</h2>
+            </div>
+        </div>
+
+        <div class="month-calendar" aria-label="Miesięczny kalendarz projektów">
+            @foreach (var weekday in WeekdayLabels)
+            {
+                <div class="month-weekday">@weekday</div>
+            }
+
+            @foreach (var day in CalendarDays)
+            {
+                var dayProjects = ProjectsForDay(day);
+                <div class="month-day @(day.Month == MonthStart.Month ? string.Empty : "is-muted") @(day.Date == DateTime.Today ? "is-current" : string.Empty)">
+                    <div class="month-day-number">@day.Day</div>
+                    <div class="month-events">
+                        @foreach (var project in dayProjects.Take(3))
+                        {
+                            <a class="calendar-event @StatusClass(project.Status)" href="@($"/projects/{project.Id}")">
+                                @project.Name
+                            </a>
+                        }
+                        @if (dayProjects.Count > 3)
+                        {
+                            <span class="calendar-more">+@(dayProjects.Count - 3)</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <aside class="side-column">
+        <div class="panel">
+            <div class="panel-header simple">
+                <div>
+                    <span class="section-kicker">Najbliższe</span>
+                    <h2>Nadchodzące terminy</h2>
+                </div>
+            </div>
+
+            <div class="deadline-card-list">
+                @foreach (var project in UpcomingProjects)
+                {
+                    <a class="deadline-card" href="@($"/projects/{project.Id}")">
+                        <span class="status-badge @StatusClass(project.Status)">@StatusLabel(project.Status)</span>
+                        <strong>@project.Name</strong>
+                        <small>@FormatDeadline(project.Deadline)</small>
+                    </a>
+                }
+                @if (!UpcomingProjects.Any())
+                {
+                    <div class="empty-state compact">Brak nadchodzących terminów.</div>
+                }
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-header simple">
+                <div>
+                    <span class="section-kicker">Ryzyko</span>
+                    <h2>Po terminie</h2>
+                </div>
+            </div>
+
+            <div class="deadline-card-list">
+                @foreach (var project in OverdueProjectItems)
+                {
+                    <a class="deadline-card overdue" href="@($"/projects/{project.Id}")">
+                        <span class="status-badge @StatusClass(project.Status)">@StatusLabel(project.Status)</span>
+                        <strong>@project.Name</strong>
+                        <small>@FormatDeadline(project.Deadline)</small>
+                    </a>
+                }
+                @if (!OverdueProjectItems.Any())
+                {
+                    <div class="empty-state compact">Brak zaległych projektów.</div>
+                }
+            </div>
+        </div>
+    </aside>
+</section>
+
+@code {
+    private static readonly string[] WeekdayLabels = { "Pon", "Wt", "Śr", "Czw", "Pt", "Sob", "Nd" };
+    private List<ProjectSummaryDto>? projects;
+    private string? loadError;
+
+    private IEnumerable<ProjectSummaryDto> ProjectItems => projects ?? Enumerable.Empty<ProjectSummaryDto>();
+    private DateTime MonthStart => new(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private DateTime WeekStart => DateTime.Today.AddDays(-(((int)DateTime.Today.DayOfWeek + 6) % 7)).Date;
+    private DateTime WeekEnd => WeekStart.AddDays(6);
+
+    private int ThisMonthProjects => ProjectItems.Count(project => IsSameMonth(project.Deadline));
+    private int ThisWeekProjects => ProjectItems.Count(project => IsInDateRange(project.Deadline, WeekStart, WeekEnd));
+    private int TodayProjects => ProjectItems.Count(project => project.Deadline?.LocalDateTime.Date == DateTime.Today);
+    private int OverdueProjects => OverdueProjectItems.Count();
+
+    private IEnumerable<DateTime> CalendarDays
+    {
+        get
+        {
+            var offset = ((int)MonthStart.DayOfWeek + 6) % 7;
+            var firstVisibleDay = MonthStart.AddDays(-offset);
+            return Enumerable.Range(0, 42).Select(day => firstVisibleDay.AddDays(day));
+        }
+    }
+
+    private IEnumerable<ProjectSummaryDto> UpcomingProjects => ProjectItems
+        .Where(project => project.Deadline.HasValue && project.Deadline.Value.LocalDateTime.Date >= DateTime.Today)
+        .OrderBy(project => project.Deadline)
+        .Take(6);
+
+    private IEnumerable<ProjectSummaryDto> OverdueProjectItems => ProjectItems
+        .Where(project => project.Deadline.HasValue
+            && project.Deadline.Value.LocalDateTime.Date < DateTime.Today
+            && project.Status != ProjectStatus.Completed
+            && project.Status != ProjectStatus.Archived)
+        .OrderBy(project => project.Deadline)
+        .Take(6);
+
+    protected override async System.Threading.Tasks.Task OnInitializedAsync()
+    {
+        try
+        {
+            projects = await Http.GetFromJsonAsync<List<ProjectSummaryDto>>("api/project");
+        }
+        catch (Exception)
+        {
+            loadError = "Nie udało się załadować danych kalendarza. Sprawdź, czy Planora API i baza danych działają.";
+            projects = new List<ProjectSummaryDto>();
+        }
+    }
+
+    private List<ProjectSummaryDto> ProjectsForDay(DateTime day)
+    {
+        return ProjectItems
+            .Where(project => project.Deadline?.LocalDateTime.Date == day.Date)
+            .OrderBy(project => project.Name)
+            .ToList();
+    }
+
+    private static bool IsSameMonth(DateTimeOffset? deadline)
+    {
+        return deadline.HasValue
+            && deadline.Value.LocalDateTime.Year == DateTime.Today.Year
+            && deadline.Value.LocalDateTime.Month == DateTime.Today.Month;
+    }
+
+    private static bool IsInDateRange(DateTimeOffset? deadline, DateTime start, DateTime end)
+    {
+        var date = deadline?.LocalDateTime.Date;
+        return date.HasValue && date.Value >= start && date.Value <= end;
+    }
+
+    private static string FormatDeadline(DateTimeOffset? deadline)
+    {
+        return deadline.HasValue ? deadline.Value.LocalDateTime.ToString("dd MMM yyyy") : "Brak terminu";
+    }
+
+    private static string StatusClass(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.Active => "status-active",
+            ProjectStatus.Completed => "status-completed",
+            ProjectStatus.Inactive => "status-inactive",
+            ProjectStatus.Archived => "status-archived",
+            _ => "status-inactive"
+        };
+    }
+
+    private static string StatusLabel(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.Active => "Aktywny",
+            ProjectStatus.Completed => "Ukończony",
+            ProjectStatus.Inactive => "Nieaktywny",
+            ProjectStatus.Archived => "Archiwalny",
+            _ => "Nieaktywny"
+        };
+    }
+}

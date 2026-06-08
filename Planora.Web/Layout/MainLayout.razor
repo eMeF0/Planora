@@ -14,13 +14,13 @@
     <main class="app-main">
         <div class="top-row">
             <div class="page-heading">
-                <span class="eyebrow">Workspace</span>
+                <span class="eyebrow">Obszar pracy</span>
                 <h1>@PageTitle</h1>
             </div>
 
             <label class="global-search">
                 <span class="search-icon" aria-hidden="true"></span>
-                <input type="search" placeholder="Search tasks, projects, notes" aria-label="Search tasks, projects, notes" />
+                <input type="search" placeholder="Szukaj zadań, projektów i notatek" aria-label="Szukaj zadań, projektów i notatek" />
             </label>
         </div>
 
@@ -39,40 +39,50 @@
 
             if (path.StartsWith("projects/create"))
             {
-                return "Create project";
+                return "Nowy projekt";
             }
 
             if (path.StartsWith("projects/"))
             {
-                return "Project details";
+                return "Szczegóły projektu";
             }
 
             if (path.StartsWith("tasks/create"))
             {
-                return "Create task";
+                return "Nowe zadanie";
             }
 
             if (path.StartsWith("ideas/create"))
             {
-                return "Capture idea";
+                return "Nowy pomysł";
             }
 
             if (path.StartsWith("links/create"))
             {
-                return "Add link";
+                return "Nowy link";
             }
 
             if (path.StartsWith("notes/create"))
             {
-                return "Add note";
+                return "Nowa notatka";
             }
 
             if (path.StartsWith("projects"))
             {
-                return "Projects";
+                return "Projekty";
             }
 
-            return "Dashboard";
+            if (path.StartsWith("calendar"))
+            {
+                return "Kalendarz";
+            }
+
+            if (path.StartsWith("analytics"))
+            {
+                return "Analityka";
+            }
+
+            return "Panel";
         }
     }
 }

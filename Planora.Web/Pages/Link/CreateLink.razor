@@ -5,17 +5,17 @@
 
 <section class="form-layout">
     <div class="form-intro">
-        <span class="section-kicker">Resource</span>
-        <h2>Add a useful link</h2>
-        <p>Attach specs, references, tickets, or documents so the project stays organized.</p>
+        <span class="section-kicker">Zasób</span>
+        <h2>Dodaj przydatny link</h2>
+        <p>Podłącz specyfikacje, materiały, zgłoszenia lub dokumenty, żeby projekt pozostał uporządkowany.</p>
     </div>
 
     <EditForm Model="newLink" OnValidSubmit="CreateNewLink" class="form-card">
         <DataAnnotationsValidator />
         <div class="form-grid">
             <label class="input-control">
-                <span>Link title</span>
-                <InputText @bind-Value="newLink.Description" placeholder="Product brief" />
+                <span>Tytuł linku</span>
+                <InputText @bind-Value="newLink.Description" placeholder="Opis produktu" />
                 <ValidationMessage For="@(() => newLink.Description)" />
             </label>
 
@@ -27,8 +27,8 @@
         </div>
 
         <div class="form-actions">
-            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Cancel</a>
-            <button class="btn btn-primary" type="submit">Add link</button>
+            <a class="btn btn-secondary" href="@($"/projects/{Id}")">Anuluj</a>
+            <button class="btn btn-primary" type="submit">Dodaj link</button>
         </div>
     </EditForm>
 </section>

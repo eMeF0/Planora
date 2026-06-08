@@ -6,28 +6,28 @@
 <section class="dashboard-grid">
     <div class="welcome-card">
         <div>
-            <span class="section-kicker">Command center</span>
-            <h2>Dashboard</h2>
-            <p>Monitor today's workload, deadlines, activity, and productivity without managing projects from this view.</p>
+            <span class="section-kicker">Centrum pracy</span>
+            <h2>Panel</h2>
+            <p>Monitoruj dzisiejsze obciążenie, terminy, aktywność i postęp bez zarządzania projektami z tego widoku.</p>
         </div>
     </div>
 
     <div class="metric-card">
         <span>Aktywne obszary</span>
         <strong>@ActiveProjects</strong>
-        <small>Workspaces currently in motion</small>
+        <small>Obszary pracy w toku</small>
     </div>
 
     <div class="metric-card">
         <span>Nadchodzące terminy</span>
         <strong>@DueSoonProjects</strong>
-        <small>Due in the next 7 days</small>
+        <small>Terminy w ciągu 7 dni</small>
     </div>
 
     <div class="metric-card">
         <span>Ukończone</span>
         <strong>@CompletionRate%</strong>
-        <small>Completion signal</small>
+        <small>Poziom ukończenia</small>
     </div>
 </section>
 
@@ -60,7 +60,7 @@
             </div>
         </div>
 
-        <div class="productivity-chart" aria-label="Productivity chart">
+        <div class="productivity-chart" aria-label="Wykres produktywności">
             @foreach (var value in ProductivityValues)
             {
                 <span style="height: @value%"></span>
@@ -80,10 +80,10 @@
                 <div class="task-checkbox" aria-hidden="true"></div>
                 <div class="task-content">
                     <div class="task-title-row">
-                        <h3>Review priority work</h3>
-                        <span class="priority-pill priority-medium">Focus</span>
+                        <h3>Przejrzyj priorytety</h3>
+                        <span class="priority-pill priority-medium">Fokus</span>
                     </div>
-                    <p>Use project task views to plan execution. Global task feed can be connected when the API exposes it.</p>
+                    <p></p>
                 </div>
             </article>
         </div>
@@ -109,7 +109,7 @@
             }
             @if (!UpcomingProjects.Any())
             {
-                <div class="empty-state compact">No upcoming deadlines.</div>
+                <div class="empty-state compact">Brak nadchodzących terminów.</div>
             }
         </div>
     </div>
@@ -118,10 +118,10 @@
         <div class="panel-header simple">
             <div>
                 <span class="section-kicker">Kalendarz</span>
-                <h2>This week</h2>
+                <h2>Ten tydzień</h2>
             </div>
         </div>
-        <div class="calendar-strip" aria-label="Weekly calendar">
+        <div class="calendar-strip" aria-label="Kalendarz tygodniowy">
             @foreach (var day in WeekDays)
             {
                 <div class="calendar-day @(day.Date == DateTime.Today ? "is-today" : string.Empty)">
@@ -146,13 +146,13 @@
                     <span class="activity-dot success"></span>
                     <span>
                         <strong>@project.Name</strong>
-                        <small>Updated signal from @project.CreatedAt.LocalDateTime.ToString("MMM d, yyyy")</small>
+                        <small>Utworzono @project.CreatedAt.LocalDateTime.ToString("dd MMM yyyy")</small>
                     </span>
                 </div>
             }
             @if (!RecentProjects.Any())
             {
-                <div class="empty-state compact">No recent activity.</div>
+                <div class="empty-state compact">Brak ostatniej aktywności.</div>
             }
         </div>
     </div>
@@ -197,13 +197,13 @@
         }
         catch (Exception)
         {
-            loadError = "Dashboard data could not be loaded. Check that the Planora API and database are running.";
+            loadError = "Nie udało się załadować danych panelu. Sprawdź, czy Planora API i baza danych działają.";
             projects = new List<ProjectSummaryDto>();
         }
     }
 
     private static string FormatDeadline(DateTimeOffset? deadline)
     {
-        return deadline.HasValue ? $"Due {deadline.Value.LocalDateTime:MMM d}" : "No deadline";
+        return deadline.HasValue ? $"Termin: {deadline.Value.LocalDateTime:dd MMM}" : "Brak terminu";
     }
 }

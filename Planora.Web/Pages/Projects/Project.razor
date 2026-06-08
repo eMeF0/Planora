@@ -14,58 +14,58 @@ else if (project != null)
 {
     <section class="project-hero">
         <div>
-            <span class="status-badge @StatusClass(project.Status)">@project.Status</span>
+            <span class="status-badge @StatusClass(project.Status)">@StatusLabel(project.Status)</span>
             <h2>@project.Name</h2>
-            <p>@(string.IsNullOrWhiteSpace(project.Description) ? "No project description has been added yet." : project.Description)</p>
+            <p>@(string.IsNullOrWhiteSpace(project.Description) ? "Nie dodano jeszcze opisu projektu." : project.Description)</p>
         </div>
         <div class="hero-actions">
-            <a class="btn btn-secondary" href="/projects">Back to projects</a>
-            <a class="btn btn-primary" href="@($"/tasks/create/{Id}")">Create task</a>
+            <a class="btn btn-secondary" href="/projects">Wróć do projektów</a>
+            <a class="btn btn-primary" href="@($"/tasks/create/{Id}")">Utwórz zadanie</a>
         </div>
     </section>
 
-    <nav class="module-tabs" aria-label="Project sections">
+    <nav class="module-tabs" aria-label="Sekcje projektu">
         @foreach (var tab in ProjectTabs)
         {
             <button class="module-tab @(activeTab == tab ? "is-active" : string.Empty)" type="button" @onclick="() => activeTab = tab">@tab</button>
         }
     </nav>
 
-    @if (activeTab == "Overview")
+    @if (activeTab == "Przegląd")
     {
         <section class="content-grid">
             <div class="panel panel-large">
                 <div class="panel-header">
                     <div>
-                        <span class="section-kicker">Overview</span>
-                        <h2>Project snapshot</h2>
+                        <span class="section-kicker">Przegląd</span>
+                        <h2>Obraz projektu</h2>
                     </div>
                 </div>
                 <div class="stats-grid compact-stats">
                     <div class="metric-card">
-                        <span>Tasks</span>
+                        <span>Zadania</span>
                         <strong>@project.Tasks.Count</strong>
-                        <small>@CompletedTaskCount completed</small>
+                        <small>Ukończone: @CompletedTaskCount</small>
                     </div>
                     <div class="metric-card">
-                        <span>Ideas</span>
+                        <span>Pomysły</span>
                         <strong>@project.Ideas.Count</strong>
-                        <small>Captured for review</small>
+                        <small>Zapisane do przeglądu</small>
                     </div>
                     <div class="metric-card">
-                        <span>Resources</span>
+                        <span>Zasoby</span>
                         <strong>@project.Links.Count</strong>
-                        <small>Links attached</small>
+                        <small>Podłączone linki</small>
                     </div>
                     <div class="metric-card">
-                        <span>Deadline</span>
+                        <span>Termin</span>
                         <strong>@DeadlineMetric</strong>
                         <small>@DeadlineSubtext</small>
                     </div>
                 </div>
                 <div class="project-summary-block">
-                    <h3>Purpose</h3>
-                    <p>@(string.IsNullOrWhiteSpace(project.Description) ? "Add a project description in settings to clarify scope and outcomes." : project.Description)</p>
+                    <h3>Cel</h3>
+                    <p>@(string.IsNullOrWhiteSpace(project.Description) ? "Dodaj opis projektu w ustawieniach, aby doprecyzować zakres i oczekiwane rezultaty." : project.Description)</p>
                 </div>
             </div>
 
@@ -73,8 +73,8 @@ else if (project != null)
                 <div class="panel">
                     <div class="panel-header simple">
                         <div>
-                            <span class="section-kicker">Knowledge</span>
-                            <h2>Recent notes</h2>
+                            <span class="section-kicker">Wiedza</span>
+                            <h2>Ostatnie notatki</h2>
                         </div>
                     </div>
                     <div class="activity-list">
@@ -83,14 +83,14 @@ else if (project != null)
                             <div class="activity-row">
                                 <span class="activity-dot warning"></span>
                                 <span>
-                                    <strong>Note</strong>
+                                    <strong>Notatka</strong>
                                     <small>@note.Content</small>
                                 </span>
                             </div>
                         }
                         @if (!project.Notes.Any())
                         {
-                            <div class="empty-state compact">No notes yet.</div>
+                            <div class="empty-state compact">Brak notatek.</div>
                         }
                     </div>
                 </div>
@@ -102,20 +102,20 @@ else if (project != null)
         <section class="panel panel-large">
             <div class="panel-header">
                 <div>
-                    <span class="section-kicker">Project tasks</span>
+                    <span class="section-kicker">Zadania projektu</span>
                     <h2>Zadania projektu</h2>
                 </div>
                 <div class="toolbar">
                     <label class="input-control compact">
-                        <span>Search</span>
-                        <input type="search" placeholder="Find task" @bind="taskSearch" @bind:event="oninput" />
+                        <span>Szukaj</span>
+                        <input type="search" placeholder="Znajdź zadanie" @bind="taskSearch" @bind:event="oninput" />
                     </label>
-                    <select class="select-control" @bind="taskFilter" aria-label="Filter tasks">
-                        <option value="All">All tasks</option>
-                        <option value="Open">Open</option>
-                        <option value="Done">Completed</option>
+                    <select class="select-control" @bind="taskFilter" aria-label="Filtruj zadania">
+                        <option value="All">Wszystkie</option>
+                        <option value="Open">Otwarte</option>
+                        <option value="Done">Ukończone</option>
                     </select>
-                    <a class="btn btn-primary" href="@($"/tasks/create/{Id}")">Add task</a>
+                    <a class="btn btn-primary" href="@($"/tasks/create/{Id}")">Dodaj zadanie</a>
                 </div>
             </div>
 
@@ -129,17 +129,17 @@ else if (project != null)
                                 <h3>@task.Title</h3>
                                 <span class="priority-pill @PriorityClass(task.Deadline)">@PriorityLabel(task.Deadline)</span>
                             </div>
-                            <p>@(string.IsNullOrWhiteSpace(task.Description) ? "No description." : task.Description)</p>
+                            <p>@(string.IsNullOrWhiteSpace(task.Description) ? "Brak opisu." : task.Description)</p>
                             <div class="task-meta">
                                 <span>@FormatDate(task.Deadline)</span>
-                                <span>@(task.IsCompleted ? "Completed" : "In progress")</span>
+                                <span>@(task.IsCompleted ? "Ukończone" : "W toku")</span>
                             </div>
                         </div>
                     </article>
                 }
                 @if (!FilteredTasks.Any())
                 {
-                    <div class="empty-state">No tasks match the current filters.</div>
+                    <div class="empty-state">Żadne zadania nie pasują do wybranych filtrów.</div>
                 }
             </div>
         </section>
@@ -149,7 +149,7 @@ else if (project != null)
         <section class="panel panel-large">
             <div class="panel-header">
                 <div>
-                    <span class="section-kicker">Members</span>
+                    <span class="section-kicker">Członkowie</span>
                     <h2>Członkowie projektu</h2>
                 </div>
             </div>
@@ -158,21 +158,21 @@ else if (project != null)
                     <span class="profile-avatar">M</span>
                     <div>
                         <strong>Mateusz</strong>
-                        <small>Owner</small>
+                        <small>Właściciel</small>
                     </div>
                 </div>
                 <div class="member-card">
                     <span class="profile-avatar muted-avatar">PM</span>
                     <div>
-                        <strong>Project Manager</strong>
-                        <small>Planning</small>
+                        <strong>Kierownik projektu</strong>
+                        <small>Planowanie</small>
                     </div>
                 </div>
                 <div class="member-card">
                     <span class="profile-avatar muted-avatar">FE</span>
                     <div>
                         <strong>Frontend</strong>
-                        <small>Delivery</small>
+                        <small>Realizacja</small>
                     </div>
                 </div>
             </div>
@@ -184,11 +184,11 @@ else if (project != null)
             <div class="panel panel-large">
                 <div class="panel-header">
                     <div>
-                        <span class="section-kicker">Stats</span>
+                        <span class="section-kicker">Statystyki</span>
                         <h2>Statystyki projektu</h2>
                     </div>
                 </div>
-                <div class="productivity-chart large-chart" aria-label="Project productivity chart">
+                <div class="productivity-chart large-chart" aria-label="Wykres produktywności projektu">
                     @foreach (var value in ProjectVelocity)
                     {
                         <span style="height: @value%"></span>
@@ -199,11 +199,11 @@ else if (project != null)
                 <div class="panel">
                     <div class="insight-grid compact-insights">
                         <div class="insight-row">
-                            <span>Completion</span>
+                            <span>Ukończenie</span>
                             <strong>@ProjectCompletion%</strong>
                         </div>
                         <div class="insight-row">
-                            <span>Open tasks</span>
+                            <span>Otwarte zadania</span>
                             <strong>@OpenTaskCount</strong>
                         </div>
                     </div>
@@ -216,22 +216,22 @@ else if (project != null)
         <section class="panel panel-large">
             <div class="panel-header">
                 <div>
-                    <span class="section-kicker">Settings</span>
+                    <span class="section-kicker">Ustawienia</span>
                     <h2>Ustawienia projektu</h2>
                 </div>
-                <a class="btn btn-secondary" href="/projects">Manage in Projects</a>
+                <a class="btn btn-secondary" href="/projects">Zarządzaj w projektach</a>
             </div>
             <div class="settings-list">
                 <div class="settings-row">
                     <span>
-                        <strong>Project identity</strong>
-                        <small>Name, description, status, and deadline are managed in the Projects module.</small>
+                        <strong>Tożsamość projektu</strong>
+                        <small>Nazwa, opis, status i termin są zarządzane w module projektów.</small>
                     </span>
                 </div>
                 <div class="settings-row danger-settings">
                     <span>
-                        <strong>Danger zone</strong>
-                        <small>Delete actions are intentionally centralized in Projects to avoid accidental removal.</small>
+                        <strong>Strefa ryzyka</strong>
+                        <small>Usuwanie jest celowo dostępne w module projektów, aby ograniczyć przypadkowe skasowanie danych.</small>
                     </span>
                 </div>
             </div>
@@ -240,25 +240,25 @@ else if (project != null)
 }
 else
 {
-    <div class="empty-state">Loading project...</div>
+    <div class="empty-state">Ładowanie projektu...</div>
 }
 
 @code {
     [Parameter]
     public Guid Id { get; set; }
 
-    private readonly string[] ProjectTabs = { "Overview", "Zadania", "Członkowie", "Statystyki", "Ustawienia" };
+    private readonly string[] ProjectTabs = { "Przegląd", "Zadania", "Członkowie", "Statystyki", "Ustawienia" };
     private ProjectDetailDto? project;
     private string taskSearch = string.Empty;
     private string taskFilter = "All";
-    private string activeTab = "Overview";
+    private string activeTab = "Przegląd";
     private string? loadError;
 
     private int CompletedTaskCount => project?.Tasks.Count(task => task.IsCompleted) ?? 0;
     private int OpenTaskCount => project?.Tasks.Count(task => !task.IsCompleted) ?? 0;
     private int ProjectCompletion => project is null || project.Tasks.Count == 0 ? 0 : (int)Math.Round(CompletedTaskCount * 100.0 / project.Tasks.Count);
-    private string DeadlineMetric => project?.Deadline.HasValue == true ? project.Deadline.Value.LocalDateTime.ToString("MMM d") : "None";
-    private string DeadlineSubtext => project?.Deadline.HasValue == true ? project.Deadline.Value.LocalDateTime.ToString("yyyy") : "No date selected";
+    private string DeadlineMetric => project?.Deadline.HasValue == true ? project.Deadline.Value.LocalDateTime.ToString("dd MMM") : "Brak";
+    private string DeadlineSubtext => project?.Deadline.HasValue == true ? project.Deadline.Value.LocalDateTime.ToString("yyyy") : "Nie wybrano daty";
     private int[] ProjectVelocity => new[] { 34, 48, 56, 44, 70, 78, 66 };
 
     private IEnumerable<Planora.Web.Models.DTOs.Task.ProjectTaskDto> FilteredTasks => (project?.Tasks ?? Enumerable.Empty<Planora.Web.Models.DTOs.Task.ProjectTaskDto>())
@@ -277,7 +277,7 @@ else
         }
         catch (Exception)
         {
-            loadError = "Project details could not be loaded. Check that the Planora API and database are running.";
+            loadError = "Nie udało się załadować szczegółów projektu. Sprawdź, czy Planora API i baza danych działają.";
         }
     }
 
@@ -295,18 +295,30 @@ else
 
     private static string FormatDate(DateTimeOffset? date)
     {
-        return date.HasValue ? $"Due {date.Value.LocalDateTime:MMM d, yyyy}" : "No due date";
+        return date.HasValue ? $"Termin: {date.Value.LocalDateTime:dd MMM yyyy}" : "Brak terminu";
     }
 
     private static string PriorityLabel(DateTimeOffset? deadline)
     {
         if (!deadline.HasValue)
         {
-            return "Normal";
+            return "Normalny";
         }
 
         var days = (deadline.Value.LocalDateTime.Date - DateTime.Now.Date).TotalDays;
-        return days <= 2 ? "High" : days <= 7 ? "Medium" : "Normal";
+        return days <= 2 ? "Wysoki" : days <= 7 ? "Średni" : "Normalny";
+    }
+
+    private static string StatusLabel(ProjectStatus status)
+    {
+        return status switch
+        {
+            ProjectStatus.Active => "Aktywny",
+            ProjectStatus.Completed => "Ukończony",
+            ProjectStatus.Inactive => "Nieaktywny",
+            ProjectStatus.Archived => "Archiwalny",
+            _ => "Nieaktywny"
+        };
     }
 
     private static string PriorityClass(DateTimeOffset? deadline)
